@@ -10,6 +10,7 @@
     "clean": "rimraf dist/"
   },
   "dependencies": {
+    "@taquito/taquito": "^8.0.0-beta.6",
     "bignumber.js": "^9.0.1",
     "dotenv": "^8.2.0",
     "errorhandler": "^1.5.1",
