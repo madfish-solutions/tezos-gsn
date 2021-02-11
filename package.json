@@ -1,16 +1,23 @@
 {
   "name": "tezos-gsn",
   "private": true,
+  "config": {
+    "network": "http://127.0.0.1:8732"
+  },
   "scripts": {
     "start": "cross-env NODE_ENV=development ts-node-dev --files --quiet src/index.ts",
     "start-prod": "cross-env NODE_ENV=production node dist/index.js",
     "prebuild": "run-s lint clean",
     "build": "tsc --skipLibCheck",
     "lint": "eslint --ext ts,js,mjs,json src",
-    "clean": "rimraf dist/"
+    "clean": "rimraf dist/",
+    "deploy": "node scripts/cli.js deploy -p $npm_package_config_network stablecoin"
   },
   "dependencies": {
+    "@taquito/signer": "^7.1.0-beta.0",
+    "@taquito/taquito": "^7.1.0-beta.0",
     "bignumber.js": "^9.0.1",
+    "commander": "^7.0.0",
     "dotenv": "^8.2.0",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",

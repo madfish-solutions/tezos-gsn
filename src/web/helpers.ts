@@ -1,6 +1,8 @@
 import http from "http";
 import express from "express";
 
+const { Tezos, MichelsonMap, TezosToolkit, ECKey } = require("@taquito/taquito");
+
 export const prodErrorHandler: express.ErrorRequestHandler = (
   err,
   _req,
@@ -17,3 +19,9 @@ export const prodErrorHandler: express.ErrorRequestHandler = (
       : (err.length && err) || err.message || codeMessage
   );
 };
+
+export let submitPermit = async (contractAddress: string, params: object) => {
+  const contract = await Tezos.contract.at(contractAddress);
+  const op = await contract.methods.permit(params).send({amount: 0})
+  await op.confirmation(1)
+}

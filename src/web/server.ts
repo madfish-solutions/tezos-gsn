@@ -8,6 +8,8 @@ import { prodErrorHandler } from "./helpers";
 import { PINO_LOGGER, PORT, HOST } from "./defaults";
 import { routes } from "./routes";
 
+import Tezos from "./tezos"
+
 const app = express()
   .use(pinoHttp(PINO_LOGGER))
   .use(helmet())
@@ -20,9 +22,13 @@ const app = express()
       : prodErrorHandler
   );
 
-const server = app.listen(+PORT, HOST, () => {
+const server = app.listen(+PORT, HOST, async () => {
   onClose(() => new Promise((res) => server.close(() => res())));
 
   const { address: host, port }: any = server.address();
   logger.info(`Server listening on http://${host}:${port}`);
+
+  Tezos.initProvider()  
 });
+
+
