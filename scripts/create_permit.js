@@ -11,15 +11,13 @@ const { InMemorySigner, importKey } = require("@taquito/signer")
 const { Parser, emitMicheline } = require("@taquito/michel-codec")
 const { assert } = require("console")
 
-const { localForger } = require("@taquito/local-forging")
-
 function getUnpackedUniques(contractAddress, chainId, currentPermitCount, permitHash) {
   return {
     data: { "prim": "Pair",
     "args":
       [ { "prim": "Pair",
           "args":
-            [ { "string": selfAddress },
+            [ { "string": contractAddress },
               { "string": chainId } ] },
         { "prim": "Pair",
           "args":
