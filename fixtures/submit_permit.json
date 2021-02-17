@@ -1,6 +1,9 @@
 {
     "pubkey": "edpkvGfYw3LyB1UcCahKQk4rF2tvbMUk8GFiTuMjL75uGXrpvKXhjn",
-    "signature": "edsigtqeC8xeBGAzPoxCP7haGkL5Zinpa2nei641uHBmmpwo1foS96R6Cq2zX2JprjRBdhL14poRSBYpwY2wdGDHVRw4bG6brvy",
-    "hash": "235df73e531f68f958ebbcdf6d0ec0f91a9f0c8f95cd19740ff7b375fa070280",
-    "contractAddress": "KT1Tw4aHmKriH1QtbcwUvS4ZG48arBbBKc6Z"
+    "signature": "edsigtmgQMGeEEKqaEm4i2vZnRHYDVZUJkdcN2kAgiGraUANRJEtPNNTvn9ogEWBVxoiAAprMM1LADNQLNegX2cFvrpYNffBJKN",
+    "hash": "9eb61f9c4e81d582c74ab3db1723e7367da3fb78ac65296fa20f3e602e48537d",
+    "contractAddress": "KT1XiH3ZqzoTfBXkDJ39L8Xvs2M4s4BoYzus",
+    "to": "tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6",
+    "tokenId": 0,
+    "amount": 1000
 }
