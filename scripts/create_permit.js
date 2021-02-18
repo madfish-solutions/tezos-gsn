@@ -62,10 +62,12 @@ async function main() {
     1// relayerFee
   )
 
+  let entrypoint = "transfer"
+
   let [key, sig, hash] = await createPermitPayload(
     toolkit,
     contractAddress,
-    "transfer",
+    entrypoint,
     params
   )
 
@@ -77,7 +79,11 @@ async function main() {
     to: to,
     tokenId: tokenId,
     amount: amount,
-    fee: relayerFee
+    fee: relayerFee,
+    callParams: {
+      entrypoint: entrypoint,
+      params: params
+    }
   }
 
   console.log(JSON.stringify(output))
@@ -186,6 +192,7 @@ const createPermitPayload = async (tz, contractAddress, entrypoint, params) => {
 
   const chainId = await tz.rpc.getChainId()
   const currentPermitCount = storage.permit_counter.toNumber()
+  console.log("permit count is", currentPermitCount)
   const unpacked = getUnpackedUniques(contractAddress, chainId, currentPermitCount, paramHash)
 
   const packed = await tz.rpc
