@@ -16,8 +16,15 @@ namespace Tezos {
     const op = await contract.methods
       .permit(signerKey, signature, paramsHash)
       .send({ amount: 0 })
-    console.log("operation is ", op)
+
+    console.log("operation is ", op.hash)
+    return op.hash
     // await op.confirmation(1)
+  }
+  export const performCall = async (contractAddress, entrypoint, params) => {
+    const contract = await Toolkit.contract.at(contractAddress)
+    const op = await contract.methods[entrypoint](...params).send({ amount: 0 })
+    return op.hash
   }
 
   export const initProvider = () => {
