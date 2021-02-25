@@ -20,6 +20,15 @@ export const prodErrorHandler: express.ErrorRequestHandler = (
   )
 }
 
-export let tokenPrice = async (contractAddress: string) => {
-  return 0.01 // TODO obtain a proper price
+export const isFeeAcceptable = (userFee, newlyEstimatedFee) => {
+  let allowedDecrease = 0.01
+  if (process.env.ALLOWED_FEE_DECREASE) {
+    allowedDecrease = parseFloat(process.env.ALLOWED_FEE_DECREASE)
+  }
+
+  return newlyEstimatedFee > userFee * (1.0 - allowedDecrease)
+}
+
+export const tokensPerMutez = async (contractAddress: string) => {
+  return 2 // TODO obtain a proper price
 }

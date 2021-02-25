@@ -3,6 +3,7 @@ import createError from "http-errors"
 import { KEK } from "../defaults"
 import Tezos from "./tezos"
 import { permitParamHash } from "../../scripts/lib"
+import { tokensPerMutez, isFeeAcceptable } from "../web/helpers"
 
 export const routes = express.Router()
 
@@ -21,7 +22,22 @@ routes.post("/submit", async (req, res) => {
   )
 
   if (!isValid) {
-    res.status(400).send("hash_does_not_match_to_params")
+    res.status(400).json({
+      error: "hash_does_not_match_to_params",
+    })
+  }
+
+  let gasEstimate = await Tezos.estimate(req.body)
+  console.log(gasEstimate)
+
+  const userPrice = req.body.fee
+  let ourGasPriceInToken = await tokensPerMutez(contractAddress)
+  if (!isFeeAcceptable(userPrice, ourGasPriceInToken)) {
+    res.status(400).json({
+      error: "fee_is_too_low",
+      requested_price: userPrice,
+      calculated_price: ourGasPriceInToken,
+    })
   }
 
   let result = await Tezos.submit(
@@ -38,5 +54,6 @@ routes.post("/submit", async (req, res) => {
 
 routes.get("/price", async (req, res) => {
   let { tokenAddress } = req.body
-  res.json(tokenAddress)
+  let result = tokensPerMutez(tokenAddress)
+  res.json(result)
 })

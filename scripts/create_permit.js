@@ -30,8 +30,7 @@ async function main() {
   })
 
   var params = formTransferParams(
-    // await toolkit.signer.publicKeyHash(),
-    "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
+    await toolkit.signer.publicKeyHash(),
     to,
     tokenId,
     amount,

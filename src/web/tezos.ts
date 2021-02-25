@@ -1,4 +1,4 @@
-import { TezosToolkit } from "@taquito/taquito"
+import { TezosToolkit, OpKind } from "@taquito/taquito"
 import { InMemorySigner, importKey } from "@taquito/signer"
 import { permitParamHash } from "../../scripts/lib"
 
@@ -50,6 +50,41 @@ namespace Tezos {
     return true
   }
 
+  const estimateAsBatch = (txs) =>
+    Toolkit.estimate.batch(
+      txs.map((tParams) => ({ kind: OpKind.TRANSACTION, ...tParams }))
+    )
+
+  export const estimate = async (permitParams) => {
+    const {
+      signature,
+      hash,
+      pubkey,
+      contractAddress,
+      callParams,
+    } = permitParams
+
+    const { entrypoint, params } = callParams
+
+    const contract = await Toolkit.contract.at(contractAddress)
+
+    let permit = contract.methods
+      .permit(pubkey, signature, hash)
+      .toTransferParams({})
+
+    let feeTransfer = contract.methods[entrypoint](...params).toTransferParams(
+      {}
+    )
+
+    let totalEstimate = 0
+    let estimates = await estimateAsBatch([permit, feeTransfer])
+    for (let est of estimates) {
+      totalEstimate += est.suggestedFeeMutez
+    }
+
+    return totalEstimate
+  }
+
   export const submit = async (
     contractAddress,
     signerKey,
@@ -71,7 +106,6 @@ namespace Tezos {
   }
 
   export const initProvider = () => {
-    console.log("init with secret key ", process.env.SECRET_KEY)
     let secretKey: string = process.env.SECRET_KEY || ""
     Toolkit.setProvider({
       signer: new InMemorySigner(secretKey),
