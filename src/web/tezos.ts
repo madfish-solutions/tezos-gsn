@@ -27,7 +27,28 @@ namespace Tezos {
     return op.hash
   }
 
+  export const submit = async (
+    contractAddress,
+    signerKey,
+    signature,
+    paramsHash,
+    entrypoint,
+    params
+  ) => {
+    const contract = await Toolkit.contract.at(contractAddress)
+
+    const batch = await Toolkit.batch()
+      .withContractCall(
+        contract.methods.permit(signerKey, signature, paramsHash)
+      )
+      .withContractCall(contract.methods[entrypoint](...params))
+
+    let batchOp = await batch.send()
+    return batchOp.hash
+  }
+
   export const initProvider = () => {
+    console.log("init with secret key ", process.env.SECRET_KEY)
     let secretKey: string = process.env.SECRET_KEY || ""
     Toolkit.setProvider({
       signer: new InMemorySigner(secretKey),

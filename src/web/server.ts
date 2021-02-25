@@ -1,16 +1,16 @@
-import express from "express";
-import helmet from "helmet";
-import pinoHttp from "pino-http";
-import errorHandler from "errorhandler";
-import { logger } from "../system/logger";
-import { onClose } from "../system/gracefulShutdown";
-import { prodErrorHandler } from "./helpers";
-import { PINO_LOGGER, PORT, HOST } from "./defaults";
-import { routes } from "./routes";
+import express from "express"
+import helmet from "helmet"
+import pinoHttp from "pino-http"
+import errorHandler from "errorhandler"
+import { logger } from "../system/logger"
+import { onClose } from "../system/gracefulShutdown"
+import { prodErrorHandler } from "./helpers"
+import { PINO_LOGGER, PORT, HOST } from "./defaults"
+import { routes } from "./routes"
 
 import Tezos from "./tezos"
 
-const app = express()
+export const app = express()
   .use(pinoHttp(PINO_LOGGER))
   .use(helmet())
   .use(express.json())
@@ -20,15 +20,13 @@ const app = express()
     process.env.NODE_ENV === "development"
       ? errorHandler({ log: true })
       : prodErrorHandler
-  );
+  )
 
-const server = app.listen(+PORT, HOST, async () => {
-  onClose(() => new Promise((res) => server.close(() => res())));
+export const server = app.listen(+PORT, HOST, async () => {
+  onClose(() => new Promise((res) => server.close(() => res())))
 
-  const { address: host, port }: any = server.address();
-  logger.info(`Server listening on http://${host}:${port}`);
+  const { address: host, port }: any = server.address()
+  logger.info(`Server listening on http://${host}:${port}`)
 
-  Tezos.initProvider()  
-});
-
-
+  Tezos.initProvider()
+})

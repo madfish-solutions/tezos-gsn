@@ -1,7 +1,7 @@
-import ms from "ms";
-import path from "path";
+import ms from "ms"
+import path from "path"
 
-export const GRACEFUL_SHUTDOWN_TIMEOUT = ms("10 seconds");
+export const GRACEFUL_SHUTDOWN_TIMEOUT = ms("10 seconds")
 export const GRACEFUL_SHUTDOWN_EXIT_EVENTS = [
   // do something when app is closing
   "exit",
@@ -13,15 +13,15 @@ export const GRACEFUL_SHUTDOWN_EXIT_EVENTS = [
   "SIGUSR2",
   // catches uncaught exceptions
   "uncaughtException",
-];
+]
 
 export const PINO = {
   prettyPrint: true,
   level: "info",
-};
+}
 
-export const CWD_PATH = process.cwd();
-export const ROOT_PATH = path.join(__dirname, "../..");
+export const CWD_PATH = process.cwd()
+export const ROOT_PATH = path.join(__dirname, "../..")
 
 export const USER_AGENT = [
   "Mozilla/5.0",
@@ -30,4 +30,4 @@ export const USER_AGENT = [
   "(KHTML, like Gecko)",
   "Chrome/62.0.3202.94",
   "Safari/537.36",
-].join(" ");
+].join(" ")
