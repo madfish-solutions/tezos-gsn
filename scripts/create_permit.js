@@ -19,7 +19,7 @@ async function main() {
   let amount = args.amount
 
   let relayerAddress = args.relayer_address
-  let relayerFee = args.fee
+  let relayerFee = args.fee || 1
 
   const toolkit = new TezosToolkit(
     process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
@@ -36,7 +36,7 @@ async function main() {
     tokenId,
     amount,
     relayerAddress,
-    1// relayerFee
+    relayerFee
   )
 
   let entrypoint = "transfer"

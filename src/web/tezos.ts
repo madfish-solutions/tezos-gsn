@@ -1,5 +1,6 @@
 import { TezosToolkit } from "@taquito/taquito"
 import { InMemorySigner, importKey } from "@taquito/signer"
+import { permitParamHash } from "../../scripts/lib"
 
 export const Toolkit = new TezosToolkit(
   process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
@@ -25,6 +26,28 @@ namespace Tezos {
     const contract = await Toolkit.contract.at(contractAddress)
     const op = await contract.methods[entrypoint](...params).send({ amount: 0 })
     return op.hash
+  }
+
+  export const validate = async (
+    contractAddress,
+    entrypoint,
+    params,
+    paramHash
+  ) => {
+    const contract = await Toolkit.contract.at(contractAddress)
+
+    let calculatedHash = await permitParamHash(
+      Toolkit,
+      contract,
+      entrypoint,
+      params
+    )
+
+    if (calculatedHash != paramHash) {
+      return false
+    }
+
+    return true
   }
 
   export const submit = async (

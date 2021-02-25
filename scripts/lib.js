@@ -115,3 +115,4 @@ function getUnpackedUniques(
 
 exports.formTransferParams = formTransferParams
 exports.createPermitPayload = createPermitPayload
+exports.permitParamHash = permitParamHash
