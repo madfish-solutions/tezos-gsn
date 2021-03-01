@@ -27,10 +27,10 @@ async function main() {
   Tezos.initProvider(secretKey)
   
   const entrypoint = "transfer"
-  const dummyFee = 1_000_000
+  const dummyFee = 1
 
 
-  let [transferParams, permitParams] = await forgeTxAndParams({
+  let [preTransferParams, prePermitParams] = await forgeTxAndParams({
     to,
     tokenId,
     amount,
@@ -43,6 +43,36 @@ async function main() {
 
 
   let preOutput = {
+    pubkey: prePermitParams.pubkey,
+    signature: prePermitParams.signature,
+    hash: prePermitParams.hash,
+    contractAddress: contractAddress,
+    to: to,
+    tokenId: tokenId,
+    amount: amount,
+    fee: dummyFee,
+    callParams: {
+      entrypoint: entrypoint,
+      params: preTransferParams
+    }
+  }
+
+  let estimate = await Tezos.estimate(preOutput)
+  estimate += 10 // to compensate for dummy estimate occupying not enough bytes 
+
+  //TODO multiply estimate by price per mutez
+
+  let [transferParams, permitParams] = await forgeTxAndParams({
+    to,
+    tokenId,
+    amount,
+    contractAddress,
+    entrypoint,
+    relayerAddress,
+    relayerFee: estimate
+  })
+
+  let output = {
     pubkey: permitParams.pubkey,
     signature: permitParams.signature,
     hash: permitParams.hash,
@@ -57,7 +87,7 @@ async function main() {
     }
   }
 
-  console.log(JSON.stringify(preOutput))
+  console.log(JSON.stringify(output))
 
 }
 
