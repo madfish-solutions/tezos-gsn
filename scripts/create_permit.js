@@ -8,10 +8,11 @@ const {
 const { InMemorySigner, importKey } = require("@taquito/signer")
 const { Parser, emitMicheline } = require("@taquito/michel-codec")
 const { assert } = require("console")
-
-const { createPermitPayload, formTransferParams } = require("./lib")
+import Tezos from "../src/web/tezos"
+import { formTransferParams } from "./lib"
 
 async function main() {
+
   const args = require("minimist")(process.argv.slice(2))
 
   let secretKey = args.secret
@@ -23,48 +24,61 @@ async function main() {
   let relayerAddress = args.relayer_address
   let relayerFee = args.fee || 1
 
-  const toolkit = new TezosToolkit(
-    process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
-  );
+  Tezos.initProvider(secretKey)
   
-  toolkit.setProvider({
-    signer: new InMemorySigner(secretKey),
-  })
+  const entrypoint = "transfer"
+  const dummyFee = 1_000_000
 
-  var params = formTransferParams(
-    await toolkit.signer.publicKeyHash(),
+
+  let [transferParams, permitParams] = await forgeTxAndParams({
     to,
     tokenId,
     amount,
-    relayerAddress,
-    relayerFee
-  )
-
-  let entrypoint = "transfer"
-
-  let [key, sig, hash] = await createPermitPayload(
-    toolkit,
     contractAddress,
     entrypoint,
-    params
-  )
+    relayerAddress,
+    relayerFee: dummyFee
+  })
 
-  let output = {
-    pubkey: key,
-    signature: sig,
-    hash: hash,
+
+
+  let preOutput = {
+    pubkey: permitParams.pubkey,
+    signature: permitParams.signature,
+    hash: permitParams.hash,
     contractAddress: contractAddress,
     to: to,
     tokenId: tokenId,
     amount: amount,
-    fee: relayerFee,
+    fee: dummyFee,
     callParams: {
       entrypoint: entrypoint,
-      params: params
+      params: transferParams
     }
   }
 
-  console.log(JSON.stringify(output))
+  console.log(JSON.stringify(preOutput))
+
+}
+
+const forgeTxAndParams = async (params) => {
+  var transferParams = formTransferParams(
+    await Tezos.selfAddress(),
+    params.to,
+    params.tokenId,
+    params.amount,
+    params.relayerAddress,
+    params.relayerFee
+  )
+
+
+  let permitParams = await Tezos.createPermitPayload(
+    params.contractAddress,
+    params.entrypoint,
+    transferParams
+  )
+
+  return [transferParams, permitParams]
 }
 
 
@@ -113,12 +127,11 @@ const getBytesToSignFromErrors = (errors) => {
 }
 
 
-// ;(async () => {
-//   try {
-//     await main()
-//   } catch (e) {
-//     console.error(e)
-//   }
-// })()
+;(async () => {
+  try {
+    await main()
+  } catch (e) {
+    console.error(e)
+  }
+})()
 
-main();
