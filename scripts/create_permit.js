@@ -11,8 +11,17 @@ const { assert } = require("console")
 import Tezos from "../src/web/tezos"
 import { formTransferParams } from "./lib"
 
-async function main() {
+import axios from "axios"
 
+const PORT = process.env.SERVER_PORT || "7979";
+const HOST = process.env.SERVER_HOST || "http://localhost";
+
+const server = axios.create({
+  baseURL: `${HOST}:${PORT}`,
+  timeout: 20000,
+});
+
+async function main() {
   const args = require("minimist")(process.argv.slice(2))
 
   let secretKey = args.secret
@@ -29,7 +38,6 @@ async function main() {
   const entrypoint = "transfer"
   const dummyFee = 1
 
-
   let [preTransferParams, prePermitParams] = await forgeTxAndParams({
     to,
     tokenId,
@@ -39,8 +47,6 @@ async function main() {
     relayerAddress,
     relayerFee: dummyFee
   })
-
-
 
   let preOutput = {
     pubkey: prePermitParams.pubkey,
@@ -56,11 +62,12 @@ async function main() {
       params: preTransferParams
     }
   }
-
   let estimate = await Tezos.estimate(preOutput)
   estimate += 10 // to compensate for dummy estimate occupying not enough bytes 
 
-  //TODO multiply estimate by price per mutez
+  let tokenPrice = tokenPrice = await server.get("/price")
+
+  let tokenFeeEstimate = tokenPrice * estimate
 
   let [transferParams, permitParams] = await forgeTxAndParams({
     to,
@@ -69,7 +76,7 @@ async function main() {
     contractAddress,
     entrypoint,
     relayerAddress,
-    relayerFee: estimate
+    relayerFee: tokenFeeEstimate
   })
 
   let output = {

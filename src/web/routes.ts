@@ -1,8 +1,7 @@
 import express from "express"
 import createError from "http-errors"
-import { KEK } from "../defaults"
+// import { KEK } from "../defaults"
 import Tezos from "./tezos"
-import { permitParamHash } from "../../scripts/lib"
 import { tokensPerMutez, isFeeAcceptable } from "../web/helpers"
 
 export const routes = express.Router()
@@ -53,7 +52,7 @@ routes.post("/submit", async (req, res) => {
 })
 
 routes.get("/price", async (req, res) => {
-  let { tokenAddress } = req.body
-  let result = tokensPerMutez(tokenAddress)
-  res.json(result)
+  let { tokenAddress } = req.query
+  let price = await tokensPerMutez(tokenAddress)
+  res.json(price)
 })

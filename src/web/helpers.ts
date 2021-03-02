@@ -29,6 +29,6 @@ export const isFeeAcceptable = (userFee, newlyEstimatedFee) => {
   return newlyEstimatedFee > userFee * (1.0 - allowedDecrease)
 }
 
-export const tokensPerMutez = async (contractAddress: string) => {
-  return 2 // TODO obtain a proper price
+export const tokensPerMutez = async (contractAddress) => {
+  return 0.02 // TODO obtain a proper price
 }
