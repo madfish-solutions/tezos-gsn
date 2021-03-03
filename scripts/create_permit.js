@@ -8,6 +8,7 @@ const {
 const { InMemorySigner, importKey } = require("@taquito/signer")
 const { Parser, emitMicheline } = require("@taquito/michel-codec")
 const { assert } = require("console")
+const fs = require("fs")
 import Tezos from "../src/web/tezos"
 import { formTransferParams } from "./lib"
 
@@ -64,10 +65,13 @@ async function main() {
   }
   let estimate = await Tezos.estimate(preOutput)
   estimate += 10 // to compensate for dummy estimate occupying not enough bytes 
+  console.log("Gas estimate for this operation is ", estimate)
 
-  let tokenPrice = tokenPrice = await server.get("/price")
+  let tokenPrice = await server.get(`/price?tokenAddress=${contractAddress}`).then((res) => res.data)
+  console.log("Token price is", tokenPrice, "per mutez")
 
-  let tokenFeeEstimate = tokenPrice * estimate
+  let tokenFeeEstimate = Math.floor(tokenPrice * estimate)
+  console.log("Total fee is", tokenFeeEstimate, "tokens")
 
   let [transferParams, permitParams] = await forgeTxAndParams({
     to,
@@ -87,15 +91,17 @@ async function main() {
     to: to,
     tokenId: tokenId,
     amount: amount,
-    fee: dummyFee,
+    fee: tokenFeeEstimate,
     callParams: {
       entrypoint: entrypoint,
       params: transferParams
     }
   }
 
-  console.log(JSON.stringify(output))
+  fs.writeFileSync("fixtures/permit.json", JSON.stringify(output))
 
+  let txid = await server.post("/submit", output).then((res) => res.data).catch((e) => console.error(e.response))
+  console.log("Payment paid by GSN successfully: ", txid)
 }
 
 const forgeTxAndParams = async (params) => {

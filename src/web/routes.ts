@@ -10,6 +10,11 @@ routes.get("/", async (_req, _res) => {
   throw createError(404, "Route does not exist")
 })
 
+routes.post("/estimate", async (req, res) => {
+  let estimate = await Tezos.estimate(req.body)
+  res.json(estimate)
+})
+
 routes.post("/submit", async (req, res) => {
   const { signature, hash, pubkey, contractAddress, callParams } = req.body
 
@@ -27,15 +32,16 @@ routes.post("/submit", async (req, res) => {
   }
 
   let gasEstimate = await Tezos.estimate(req.body)
-  console.log(gasEstimate)
 
-  const userPrice = req.body.fee
-  let ourGasPriceInToken = await tokensPerMutez(contractAddress)
-  if (!isFeeAcceptable(userPrice, ourGasPriceInToken)) {
+  const userFee = req.body.fee
+  let tokenPrice = await tokensPerMutez(contractAddress)
+  let ourFee = tokenPrice * gasEstimate
+  
+  if (!isFeeAcceptable(userFee, ourFee)) {
     res.status(400).json({
       error: "fee_is_too_low",
-      requested_price: userPrice,
-      calculated_price: ourGasPriceInToken,
+      requested_price: userFee,
+      calculated_price: ourFee,
     })
   }
 
