@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config()
 
 const {
   ContractAbstraction,
@@ -14,13 +14,13 @@ import { formTransferParams } from "./lib"
 
 import axios from "axios"
 
-const PORT = process.env.SERVER_PORT || "7979";
-const HOST = process.env.SERVER_HOST || "http://localhost";
+const PORT = process.env.SERVER_PORT || "7979"
+const HOST = process.env.SERVER_HOST || "http://localhost"
 
 const server = axios.create({
   baseURL: `${HOST}:${PORT}`,
   timeout: 20000,
-});
+})
 
 async function main() {
   const args = require("minimist")(process.argv.slice(2))
@@ -35,7 +35,7 @@ async function main() {
   let relayerFee = args.fee || 1
 
   Tezos.initProvider(secretKey)
-  
+
   const entrypoint = "transfer"
   const dummyFee = 1
 
@@ -46,7 +46,7 @@ async function main() {
     contractAddress,
     entrypoint,
     relayerAddress,
-    relayerFee: dummyFee
+    relayerFee: dummyFee,
   })
 
   let preOutput = {
@@ -60,17 +60,21 @@ async function main() {
     fee: dummyFee,
     callParams: {
       entrypoint: entrypoint,
-      params: preTransferParams
-    }
+      params: preTransferParams,
+    },
   }
   let estimate = await Tezos.estimate(preOutput)
-  estimate += 10 // to compensate for dummy estimate occupying not enough bytes 
+  estimate += 10 // to compensate for dummy estimate occupying not enough bytes
   console.log("Gas estimate for this operation is ", estimate)
 
-  let tokenPrice = await server.get(`/price?tokenAddress=${contractAddress}`).then((res) => res.data)
-  console.log("Token price is", tokenPrice, "per mutez")
+  let tokenPrice = await server
+    .get(`/price?tokenAddress=${contractAddress}`)
+    .then((res) => res.data)
+  console.log("Token price is", tokenPrice.price, "per mutez")
 
-  let tokenFeeEstimate = Math.floor(tokenPrice * estimate)
+  let tokenFeeEstimate =
+    tokenPrice.price * estimate * Math.pow(10, tokenPrice.decimals)
+  tokenFeeEstimate = Math.floor(tokenFeeEstimate)
   console.log("Total fee is", tokenFeeEstimate, "tokens")
 
   let [transferParams, permitParams] = await forgeTxAndParams({
@@ -80,7 +84,7 @@ async function main() {
     contractAddress,
     entrypoint,
     relayerAddress,
-    relayerFee: tokenFeeEstimate
+    relayerFee: tokenFeeEstimate,
   })
 
   let output = {
@@ -94,13 +98,16 @@ async function main() {
     fee: tokenFeeEstimate,
     callParams: {
       entrypoint: entrypoint,
-      params: transferParams
-    }
+      params: transferParams,
+    },
   }
 
   fs.writeFileSync("fixtures/permit.json", JSON.stringify(output))
 
-  let txid = await server.post("/submit", output).then((res) => res.data).catch((e) => console.error(e.response))
+  let txid = await server
+    .post("/submit", output)
+    .then((res) => res.data)
+    .catch((e) => console.error(e.response))
   console.log("Payment paid by GSN successfully: ", txid)
 }
 
@@ -114,7 +121,6 @@ const forgeTxAndParams = async (params) => {
     params.relayerFee
   )
 
-
   let permitParams = await Tezos.createPermitPayload(
     params.contractAddress,
     params.entrypoint,
@@ -123,7 +129,6 @@ const forgeTxAndParams = async (params) => {
 
   return [transferParams, permitParams]
 }
-
 
 const getBytesToSignFromErrors = (errors) => {
   const errors_with = errors.map((x) => x.with).filter((x) => x !== undefined)
@@ -169,7 +174,6 @@ const getBytesToSignFromErrors = (errors) => {
   }
 }
 
-
 ;(async () => {
   try {
     await main()
@@ -177,4 +181,3 @@ const getBytesToSignFromErrors = (errors) => {
     console.error(e)
   }
 })()
-

@@ -4,7 +4,7 @@ import { getUnpackedUniques } from "../../scripts/lib"
 import { assert } from "console"
 import { buf2hex, hex2buf } from "@taquito/utils"
 import blake from "blakejs"
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from "bignumber.js"
 
 export const Toolkit = new TezosToolkit(
   process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
@@ -19,11 +19,7 @@ namespace Tezos {
   ) => {
     const contract = await Toolkit.contract.at(contractAddress)
 
-    let calculatedHash = await permitParamHash(
-      contract,
-      entrypoint,
-      params
-    )
+    let calculatedHash = await permitParamHash(contract, entrypoint, params)
 
     if (calculatedHash != paramHash) {
       return false
@@ -76,7 +72,7 @@ namespace Tezos {
       ...parameters
     ).toTransferParams().parameter.value
     const wrapped_param_type = contract.entrypoints.entrypoints[entrypoint]
-  
+
     const raw_packed = await Toolkit.rpc
       .packData({
         data: wrapped_param,
@@ -89,18 +85,22 @@ namespace Tezos {
     } else {
       throw `packing ${wrapped_param} failed`
     }
-  
+
     return buf2hex(blake.blake2b(hex2buf(packed_param), null, 32))
   }
 
-  export const createPermitPayload = async (contractAddress, entrypoint, params) => {
+  export const createPermitPayload = async (
+    contractAddress,
+    entrypoint,
+    params
+  ) => {
     const contract = await Toolkit.contract.at(contractAddress)
-  
-    const storage = await contract.storage<{permit_counter: BigNumber}>()
-  
+
+    const storage = await contract.storage<{ permit_counter: BigNumber }>()
+
     const signerKey = await Toolkit.signer.publicKey()
     const paramHash = await permitParamHash(contract, entrypoint, params)
-  
+
     const chainId = await Toolkit.rpc.getChainId()
     const currentPermitCount = storage.permit_counter.toNumber()
     // console.log("permit count is", currentPermitCount)
@@ -110,16 +110,18 @@ namespace Tezos {
       currentPermitCount,
       paramHash
     )
-  
+
     const packed = await Toolkit.rpc
       .packData(unpacked)
       .catch((e) => console.error("error:", e))
-  
-    const sig = await Toolkit.signer.sign(packed["packed"]).then((s) => s.prefixSig)
+
+    const sig = await Toolkit.signer
+      .sign(packed["packed"])
+      .then((s) => s.prefixSig)
     return {
       pubkey: signerKey,
       signature: sig,
-      hash: paramHash
+      hash: paramHash,
     }
   }
 
@@ -133,7 +135,7 @@ namespace Tezos {
   ) => {
     const contract = await Toolkit.contract.at(contractAddress)
 
-    const batch = await Toolkit.batch()
+    const batch = Toolkit.batch()
       .withContractCall(
         contract.methods.permit(signerKey, signature, paramsHash)
       )

@@ -2,7 +2,8 @@ import express from "express"
 import createError from "http-errors"
 // import { KEK } from "../defaults"
 import Tezos from "./tezos"
-import { tokensPerMutez, isFeeAcceptable } from "../web/helpers"
+import { tokensPerMutez } from "./price"
+import { isFeeAcceptable } from "../web/helpers"
 
 export const routes = express.Router()
 
@@ -35,8 +36,9 @@ routes.post("/submit", async (req, res) => {
 
   const userFee = req.body.fee
   let tokenPrice = await tokensPerMutez(contractAddress)
-  let ourFee = tokenPrice * gasEstimate
-  
+  let ourFee =
+    tokenPrice.price * gasEstimate * Math.pow(10, tokenPrice.decimals)
+
   if (!isFeeAcceptable(userFee, ourFee)) {
     res.status(400).json({
       error: "fee_is_too_low",
