@@ -40,6 +40,13 @@ export class HarbingerPriceProvider implements PriceProvider {
       assetMap: BigMapAbstraction
     }>()
 
+    if (!this.tokens.hasOwnProperty(contractAddress)) {
+      return {
+        price: -1,
+        decimals: 0,
+        error: `Token ${contractAddress} is not supported by this relayer`,
+      }
+    }
     let asset = this.tokens[contractAddress]
 
     let assetMap = storage["assetMap"]
