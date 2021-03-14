@@ -28,6 +28,15 @@ namespace Tezos {
     return true
   }
 
+  export const validateAddress = async (callParams) => {
+    const gsnAddress = await Toolkit.signer.publicKeyHash()
+
+    const addressFromTransfer = callParams.params[0].txs[1].to_
+    if (addressFromTransfer != gsnAddress) {
+      throw new Error(`Wrong fee address. Should be ${gsnAddress}`)
+    }
+  }
+
   const estimateAsBatch = (txs) =>
     Toolkit.estimate.batch(
       txs.map((tParams) => ({ kind: OpKind.TRANSACTION, ...tParams }))

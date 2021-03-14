@@ -19,6 +19,12 @@ routes.post("/estimate", async (req, res) => {
 routes.post("/submit", async (req, res) => {
   const { signature, hash, pubkey, contractAddress, callParams } = req.body
 
+  try {
+    await Tezos.validateAddress(callParams)
+  } catch (e) {
+    res.status(400).json(e)
+  }
+
   let isValid = await Tezos.validate(
     contractAddress,
     callParams.entrypoint,
