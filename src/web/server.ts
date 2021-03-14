@@ -1,5 +1,6 @@
 import express from "express"
 import helmet from "helmet"
+import cors from "cors"
 import pinoHttp from "pino-http"
 import errorHandler from "errorhandler"
 import { logger } from "../system/logger"
@@ -14,6 +15,7 @@ import { initPriceProvider } from "./price"
 export const app = express()
   .use(pinoHttp(PINO_LOGGER))
   .use(helmet())
+  .use(cors())
   .use(express.json())
   .use(express.urlencoded({ extended: true }))
   .use("/", routes)
