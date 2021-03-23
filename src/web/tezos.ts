@@ -31,7 +31,7 @@ namespace Tezos {
   export const validateAddress = async (callParams) => {
     const gsnAddress = await Toolkit.signer.publicKeyHash()
 
-    const addressFromTransfer = callParams.params[0].txs[1].to_
+    const addressFromTransfer = callParams.params[0][0].txs[1].to_
     if (addressFromTransfer != gsnAddress) {
       throw new Error(`Wrong fee address. Should be ${gsnAddress}`)
     }
@@ -77,25 +77,12 @@ namespace Tezos {
     entrypoint, //: string,
     parameters //: any
   ) {
-    const wrapped_param = contract.methods[entrypoint](
-      ...parameters
-    ).toTransferParams().parameter.value
-    const wrapped_param_type = contract.entrypoints.entrypoints[entrypoint]
-
-    const raw_packed = await Toolkit.rpc
-      .packData({
-        data: wrapped_param,
-        type: wrapped_param_type,
+    const raw_packed = await Toolkit.rpc.packData({
+      data: contract.parameterSchema.Encode(entrypoint, ...parameters),
+      type: contract.parameterSchema.root.typeWithoutAnnotations(),
       })
-      .catch((e) => console.error("error:", e))
-    var packed_param
-    if (raw_packed) {
-      packed_param = raw_packed.packed
-    } else {
-      throw `packing ${wrapped_param} failed`
-    }
 
-    return buf2hex(blake.blake2b(hex2buf(packed_param), null, 32))
+    return blake.blake2bHex(hex2buf(raw_packed.packed), null, 32)
   }
 
   export const createPermitPayload = async (
@@ -155,10 +142,10 @@ namespace Tezos {
   }
 
   export const initProvider = (sk = "") => {
-    let secretKey: string = process.env.SECRET_KEY || sk
-    assert(secretKey, "No secret key specified7")
+    let secretKey = sk || process.env.SECRET_KEY
+    assert(secretKey, "No secret key specified")
     Toolkit.setProvider({
-      signer: new InMemorySigner(secretKey),
+      signer: new InMemorySigner(secretKey!),
     })
   }
 
