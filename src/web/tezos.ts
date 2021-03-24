@@ -108,7 +108,6 @@ namespace Tezos {
 
     const chainId = await Toolkit.rpc.getChainId()
     const currentPermitCount = storage.permit_counter.toNumber()
-    // console.log("permit count is", currentPermitCount)
     const unpacked = getUnpackedUniques(
       contractAddress,
       chainId,
