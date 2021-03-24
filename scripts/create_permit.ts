@@ -1,3 +1,5 @@
+// Sample inputs for this script can be found in `create_permit.sh`
+
 require("dotenv").config()
 
 const fs = require("fs")
