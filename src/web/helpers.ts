@@ -1,7 +1,14 @@
 import http from "http"
 import express from "express"
 
-const { Tezos, MichelsonMap, TezosToolkit, ECKey } = require("@taquito/taquito")
+export class GsnError extends Error {
+  data: object
+  constructor(message, data) {
+    super(message)
+    this.name = "GsnError"
+    this.data = data
+  }
+}
 
 export const prodErrorHandler: express.ErrorRequestHandler = (
   err,
@@ -9,6 +16,8 @@ export const prodErrorHandler: express.ErrorRequestHandler = (
   res,
   _next // eslint-disable-line
 ) => {
+  console.log("prod encountered error", err)
+
   const code = err.code || err.status || 500
   const codeMessage = http.STATUS_CODES[code]
 
@@ -20,15 +29,16 @@ export const prodErrorHandler: express.ErrorRequestHandler = (
   )
 }
 
-export const isFeeAcceptable = (userFee, newlyEstimatedFee) => {
+export const validateFeeSlippage = (userFee, newlyEstimatedFee) => {
   let allowedDecrease = 0.01
   if (process.env.ALLOWED_FEE_DECREASE) {
     allowedDecrease = parseFloat(process.env.ALLOWED_FEE_DECREASE)
   }
-
-  return newlyEstimatedFee > userFee * (1.0 - allowedDecrease)
-}
-
-export const tokensPerMutez = async (contractAddress) => {
-  return 0.02 // TODO obtain a proper price
+  if (newlyEstimatedFee > userFee) {
+    throw new GsnError("fee_is_too_low", {
+      error: "fee_is_too_low",
+      requestedPrice: userFee,
+      minAllowedPrice: newlyEstimatedFee,
+    })
+  }
 }

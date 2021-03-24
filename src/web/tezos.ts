@@ -5,6 +5,7 @@ import { assert } from "console"
 import { buf2hex, hex2buf } from "@taquito/utils"
 import blake from "blakejs"
 import { BigNumber } from "bignumber.js"
+import { GsnError } from "../web/helpers"
 
 export const Toolkit = new TezosToolkit(
   process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
@@ -22,18 +23,27 @@ namespace Tezos {
     let calculatedHash = await permitParamHash(contract, entrypoint, params)
 
     if (calculatedHash != paramHash) {
-      return false
+      throw new GsnError("hash_does_not_match_to_params", {
+        calculated: calculatedHash,
+        input: paramHash,
+      })
     }
+  }
 
-    return true
+  export const getFeeTxFromParams = (callParams) => {
+    return callParams.params[0][0].txs[1]
   }
 
   export const validateAddress = async (callParams) => {
     const gsnAddress = await Toolkit.signer.publicKeyHash()
 
-    const addressFromTransfer = callParams.params[0][0].txs[1].to_
+    const feeTx = getFeeTxFromParams(callParams)
+    const addressFromTransfer = feeTx.to_
     if (addressFromTransfer != gsnAddress) {
-      throw new Error(`Wrong fee address. Should be ${gsnAddress}`)
+      throw new GsnError("wrong_fee_address", {
+        actual: addressFromTransfer,
+        expected: gsnAddress,
+      })
     }
   }
 
@@ -80,7 +90,7 @@ namespace Tezos {
     const raw_packed = await Toolkit.rpc.packData({
       data: contract.parameterSchema.Encode(entrypoint, ...parameters),
       type: contract.parameterSchema.root.typeWithoutAnnotations(),
-      })
+    })
 
     return blake.blake2bHex(hex2buf(raw_packed.packed), null, 32)
   }

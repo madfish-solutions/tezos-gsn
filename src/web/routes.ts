@@ -3,7 +3,7 @@ import createError from "http-errors"
 // import { KEK } from "../defaults"
 import Tezos from "./tezos"
 import { tokensPerMutez } from "./price"
-import { isFeeAcceptable } from "../web/helpers"
+import { GsnError, validateFeeSlippage } from "./helpers"
 
 export const routes = express.Router()
 
@@ -21,37 +21,22 @@ routes.post("/submit", async (req, res) => {
 
   try {
     await Tezos.validateAddress(callParams)
-  } catch (e) {
-    res.status(400).json(e)
-  }
 
-  let isValid = await Tezos.validate(
+  await Tezos.validate(
     contractAddress,
     callParams.entrypoint,
     callParams.params,
     hash
   )
 
-  if (!isValid) {
-    res.status(400).json({
-      error: "hash_does_not_match_to_params",
-    })
-  }
+  const gasEstimate = await Tezos.estimate(req.body)
 
-  let gasEstimate = await Tezos.estimate(req.body)
-
-  const userFee = req.body.fee
+  const userFee = Tezos.getFeeTxFromParams(req.body.callParams).amount
   let tokenPrice = await tokensPerMutez(contractAddress)
   let ourFee =
     tokenPrice.price * gasEstimate * Math.pow(10, tokenPrice.decimals)
 
-  if (!isFeeAcceptable(userFee, ourFee)) {
-    res.status(400).json({
-      error: "fee_is_too_low",
-      requested_price: userFee,
-      calculated_price: ourFee,
-    })
-  }
+  validateFeeSlippage(userFee, ourFee)
 
   let result = await Tezos.submit(
     contractAddress,
@@ -61,7 +46,6 @@ routes.post("/submit", async (req, res) => {
     callParams.entrypoint,
     callParams.params
   )
-
   res.json(result)
 })
 
@@ -69,4 +53,22 @@ routes.get("/price", async (req, res) => {
   let { tokenAddress } = req.query
   let price = await tokensPerMutez(tokenAddress)
   res.json(price)
+})
+
+routes.use(function errorHandler(err, req, res, next) {
+  if (res.headersSent) {
+    return next(err)
+  }
+
+  if (err instanceof GsnError) {
+    return res.status(400).json({
+      error: err.message,
+      ...err.data,
+    })
+  }
+  res.status(400).json({
+    error: err.name,
+    id: err.id,
+    message: err.message,
+  })
 })
