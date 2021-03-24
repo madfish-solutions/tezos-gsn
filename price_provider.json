@@ -1,11 +1,12 @@
 {
-    "type": "harbinger",
-    "normalizer": "KT1AdbYiPYb5hDuEuVrfxmFehtnBCXv4Np7r",
-    "tokens": {
-        "KT1HK2fShCESoQuBvXX3zhc9m2bvV26UEjiS" :  {
-            "name": "XTZ-USD",
-            "decimals": 8
-        }
-    },
-    "mainnet" : true
+  "type": "harbinger",
+  "normalizer": "KT1AdbYiPYb5hDuEuVrfxmFehtnBCXv4Np7r",
+  "tokens": {
+    "KT1QcZWxsCTzW5fjkAUwko1Mbu9va4pauXbi": {
+      "name": "XTZ-USD",
+      "decimals": 8,
+      "tokenId": 0 
+    }
+  },
+  "mainnet": true
 }

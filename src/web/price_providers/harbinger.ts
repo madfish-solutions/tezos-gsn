@@ -1,15 +1,9 @@
 import { Toolkit } from "../tezos"
-import { PriceProvider, Price } from "./interface"
+import { PriceProvider, Price, Tokens } from "./interface"
+import { GsnError } from "../helpers"
 
 import { BigMapAbstraction, TezosToolkit } from "@taquito/taquito"
 import BigNumber from "bignumber.js"
-
-interface Tokens {
-  [address: string]: {
-    name: string
-    decimals: number
-  }
-}
 
 // HACK for using real-world prices in a sandbox
 const mainnetNode = "https://mainnet-tezos.giganode.io"
@@ -34,20 +28,32 @@ export class HarbingerPriceProvider implements PriceProvider {
     }
   }
 
-  async price(contractAddress: string): Promise<Price> {
+  async supported(): Promise<Tokens> {
+    return this.tokens
+  }
+
+  async price(contractAddress: string, tokenId: number): Promise<Price> {
     let priceNormalizer = await this.toolkit.contract.at(this.normalizerAddress)
     let storage = await priceNormalizer.storage<{
       assetMap: BigMapAbstraction
     }>()
 
     if (!this.tokens.hasOwnProperty(contractAddress)) {
-      return {
-        price: -1,
-        decimals: 0,
-        error: `Token ${contractAddress} is not supported by this relayer`,
-      }
+      throw new GsnError("unsupported_token_contract", {
+        address: contractAddress,
+        provider: "harbinger",
+      })
     }
+
     let asset = this.tokens[contractAddress]
+    if (asset.tokenId != tokenId) {
+      throw new GsnError("unsupported_token_id", {
+        tokenId: tokenId,
+        supportedTokenId: asset.tokenId,
+        address: contractAddress,
+        provider: "harbinger",
+      })
+    }
 
     let assetMap = storage["assetMap"]
     let pairPrices = await assetMap.get<{ computedPrice: BigNumber }>(
@@ -60,7 +66,11 @@ export class HarbingerPriceProvider implements PriceProvider {
       return { price: mutezPrice, decimals: asset.decimals }
     }
 
-    return { price: -1, decimals: 0 }
+    throw new GsnError("relayer_price_provider_configuration_error", {
+      description: "No such pair exists in normalizer",
+      assetName: asset.name,
+      provider: "harbinger",
+    })
   }
 
   scaleDecimals(input: number): number {

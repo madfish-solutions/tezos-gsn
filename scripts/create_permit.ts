@@ -2,7 +2,6 @@ require("dotenv").config()
 
 const fs = require("fs")
 import Tezos from "../src/web/tezos"
-import { formTransferParams } from "./lib"
 
 import axios from "axios"
 
@@ -41,9 +40,9 @@ async function main() {
   })
 
   let preOutput = {
-    pubkey: prePermitParams.pubkey,
-    signature: prePermitParams.signature,
-    hash: prePermitParams.hash,
+    pubkey: prePermitParams["pubkey"],
+    signature: prePermitParams["signature"],
+    hash: prePermitParams["hash"],
     contractAddress: contractAddress,
     to: to,
     tokenId: tokenId,
@@ -59,7 +58,7 @@ async function main() {
   console.log("Gas estimate for this operation is ", estimate)
 
   let tokenPrice = await server
-    .get(`/price?tokenAddress=${contractAddress}`)
+    .get(`/price?tokenAddress=${contractAddress}&tokenId=${tokenId}`)
     .then((res) => res.data)
   console.log("Token price is", tokenPrice.price, "per mutez")
 
@@ -74,8 +73,6 @@ async function main() {
     "mutokens."
   )
 
-  console.log("tokenFeeEstimate", tokenFeeEstimate)
-
   let [transferParams, permitParams] = await forgeTxAndParams({
     to,
     tokenId,
@@ -87,9 +84,9 @@ async function main() {
   })
 
   let output = {
-    pubkey: permitParams.pubkey,
-    signature: permitParams.signature,
-    hash: permitParams.hash,
+    pubkey: permitParams["pubkey"],
+    signature: permitParams["signature"],
+    hash: permitParams["hash"],
     contractAddress: contractAddress,
     to: to,
     tokenId: tokenId,

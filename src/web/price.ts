@@ -8,12 +8,16 @@ export const initPriceProvider = (params) => {
   let type = params.type
   if (type == "harbinger") {
     let normalizer = params.normalizer
-    let pairs = params.tokens
+    let tokens = params.tokens
     let useMainnet = params.mainnet
-    currentProvider = new HarbingerPriceProvider(normalizer, pairs, useMainnet)
+    currentProvider = new HarbingerPriceProvider(normalizer, tokens, useMainnet)
   }
 }
 
-export const tokensPerMutez = async (contractAddress) => {
-  return currentProvider.price(contractAddress)
+export const tokensPerMutez = async (contractAddress, tokenId = 0) => {
+  return currentProvider.price(contractAddress, tokenId)
+}
+
+export const supportedTokens = async () => {
+  return currentProvider.supported()
 }
