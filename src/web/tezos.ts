@@ -1,11 +1,10 @@
 import { TezosToolkit, OpKind } from "@taquito/taquito"
 import { InMemorySigner, importKey } from "@taquito/signer"
-import { getUnpackedUniques } from "../../scripts/lib"
 import { assert } from "console"
-import { buf2hex, hex2buf } from "@taquito/utils"
+import { hex2buf } from "@taquito/utils"
 import blake from "blakejs"
 import { BigNumber } from "bignumber.js"
-import { GsnError } from "../web/helpers"
+import { GsnError, getUnpackedUniques } from "../web/helpers"
 
 export const Toolkit = new TezosToolkit(
   process.env.RPC_PROVIDER || "http://127.0.0.1:8732"

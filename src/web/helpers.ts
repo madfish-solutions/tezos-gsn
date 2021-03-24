@@ -42,3 +42,33 @@ export const validateFeeSlippage = (userFee, newlyEstimatedFee) => {
     })
   }
 }
+
+export const getUnpackedUniques = (
+  contractAddress,
+  chainId,
+  currentPermitCount,
+  permitHash
+) => {
+  return {
+    data: {
+      prim: "Pair",
+      args: [
+        {
+          prim: "Pair",
+          args: [{ string: contractAddress }, { string: chainId }],
+        },
+        {
+          prim: "Pair",
+          args: [{ int: currentPermitCount.toString() }, { bytes: permitHash }],
+        },
+      ],
+    },
+    type: {
+      prim: "pair",
+      args: [
+        { prim: "pair", args: [{ prim: "address" }, { prim: "chain_id" }] },
+        { prim: "pair", args: [{ prim: "nat" }, { prim: "bytes" }] },
+      ],
+    },
+  }
+}
