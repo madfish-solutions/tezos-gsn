@@ -3,7 +3,7 @@
 require("dotenv").config()
 
 const fs = require("fs")
-import Tezos from "../src/web/tezos"
+import * as Tezos from "../src/web/tezos"
 
 import axios from "axios"
 

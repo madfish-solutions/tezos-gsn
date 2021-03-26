@@ -16,7 +16,7 @@ export class HarbingerPriceProvider implements PriceProvider {
   constructor(
     normalizerAddress: string,
     tokens: Tokens,
-    useMainnet: boolean = false
+    useMainnet = false
   ) {
     this.tokens = tokens
     this.normalizerAddress = normalizerAddress

@@ -2,7 +2,7 @@ import http from "http"
 import express from "express"
 
 export class GsnError extends Error {
-  data: object
+  data: Record<any, any>
   constructor(message, data) {
     super(message)
     this.name = "GsnError"
@@ -30,10 +30,10 @@ export const prodErrorHandler: express.ErrorRequestHandler = (
 }
 
 export const validateFeeSlippage = (userFee, newlyEstimatedFee) => {
-  let allowedDecrease = 0.01
-  if (process.env.ALLOWED_FEE_DECREASE) {
-    allowedDecrease = parseFloat(process.env.ALLOWED_FEE_DECREASE)
-  }
+  // let allowedDecrease = 0.01
+  // if (process.env.ALLOWED_FEE_DECREASE) {
+  //   allowedDecrease = parseFloat(process.env.ALLOWED_FEE_DECREASE)
+  // }
   if (newlyEstimatedFee > userFee) {
     throw new GsnError("fee_is_too_low", {
       error: "fee_is_too_low",

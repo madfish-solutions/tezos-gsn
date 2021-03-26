@@ -1,12 +1,12 @@
 import express from "express"
 import createError from "http-errors"
-import Tezos from "./tezos"
+import * as Tezos from "./tezos"
 import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
 
 export const routes = express.Router()
 
-routes.get("/", async (_req, _res) => {
+routes.get("/", async () => {
   throw createError(404, "Route does not exist")
 })
 
@@ -55,12 +55,12 @@ routes.get("/price", async (req, res) => {
   res.json(price)
 })
 
-routes.get("/tokens", async (req, res) => {
+routes.get("/tokens", async (_, res) => {
   const tokens = await supportedTokens()
   res.json(tokens)
 })
 
-routes.use(function errorHandler(err, req, res, next) {
+routes.use(function errorHandler(err, _, res, next) {
   if (res.headersSent) {
     return next(err)
   }
