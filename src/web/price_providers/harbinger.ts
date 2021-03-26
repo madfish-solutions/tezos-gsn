@@ -33,8 +33,10 @@ export class HarbingerPriceProvider implements PriceProvider {
   }
 
   async price(contractAddress: string, tokenId: number): Promise<Price> {
-    let priceNormalizer = await this.toolkit.contract.at(this.normalizerAddress)
-    let storage = await priceNormalizer.storage<{
+    const priceNormalizer = await this.toolkit.contract.at(
+      this.normalizerAddress
+    )
+    const storage = await priceNormalizer.storage<{
       assetMap: BigMapAbstraction
     }>()
 
@@ -45,7 +47,7 @@ export class HarbingerPriceProvider implements PriceProvider {
       })
     }
 
-    let asset = this.tokens[contractAddress]
+    const asset = this.tokens[contractAddress]
     if (asset.tokenId != tokenId) {
       throw new GsnError("unsupported_token_id", {
         tokenId: tokenId,
@@ -55,14 +57,14 @@ export class HarbingerPriceProvider implements PriceProvider {
       })
     }
 
-    let assetMap = storage["assetMap"]
-    let pairPrices = await assetMap.get<{ computedPrice: BigNumber }>(
+    const assetMap = storage["assetMap"]
+    const pairPrices = await assetMap.get<{ computedPrice: BigNumber }>(
       asset.name
     )
     if (pairPrices) {
-      let computedPrice = pairPrices.computedPrice.toNumber()
-      let tezPrice = this.scaleDecimals(computedPrice)
-      let mutezPrice = this.scaleDecimals(tezPrice)
+      const computedPrice = pairPrices.computedPrice.toNumber()
+      const tezPrice = this.scaleDecimals(computedPrice)
+      const mutezPrice = this.scaleDecimals(tezPrice)
       return { price: mutezPrice, decimals: asset.decimals }
     }
 

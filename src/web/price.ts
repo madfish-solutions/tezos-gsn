@@ -5,11 +5,11 @@ import { HarbingerPriceProvider } from "./price_providers/harbinger"
 export let currentProvider: PriceProvider = new DummyPriceProvider()
 
 export const initPriceProvider = (params) => {
-  let type = params.type
+  const type = params.type
   if (type == "harbinger") {
-    let normalizer = params.normalizer
-    let tokens = params.tokens
-    let useMainnet = params.mainnet
+    const normalizer = params.normalizer
+    const tokens = params.tokens
+    const useMainnet = params.mainnet
     currentProvider = new HarbingerPriceProvider(normalizer, tokens, useMainnet)
   }
 }

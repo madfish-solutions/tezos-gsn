@@ -18,20 +18,20 @@ const server = axios.create({
 async function main() {
   const args = require("minimist")(process.argv.slice(2))
 
-  let secretKey = args.secret
-  let contractAddress = args.contract_address
-  let tokenId = args.tokenid || 0
-  let to = args.to
-  let amount = args.amount
+  const secretKey = args.secret
+  const contractAddress = args.contract_address
+  const tokenId = args.tokenid || 0
+  const to = args.to
+  const amount = args.amount
 
-  let relayerAddress = args.relayer_address
+  const relayerAddress = args.relayer_address
 
   Tezos.initProvider(secretKey)
 
   const entrypoint = "transfer"
   const dummyFee = 1
 
-  let [preTransferParams, prePermitParams] = await forgeTxAndParams({
+  const [preTransferParams, prePermitParams] = await forgeTxAndParams({
     to,
     tokenId,
     amount,
@@ -41,7 +41,7 @@ async function main() {
     relayerFee: dummyFee,
   })
 
-  let preOutput = {
+  const preOutput = {
     pubkey: prePermitParams["pubkey"],
     signature: prePermitParams["signature"],
     hash: prePermitParams["hash"],
@@ -59,7 +59,7 @@ async function main() {
   estimate += 100 // to compensate for dummy estimate occupying not enough bytes
   console.log("Gas estimate for this operation is ", estimate)
 
-  let tokenPrice = await server
+  const tokenPrice = await server
     .get(`/price?tokenAddress=${contractAddress}&tokenId=${tokenId}`)
     .then((res) => res.data)
   console.log("Token price is", tokenPrice.price, "per mutez")
@@ -75,7 +75,7 @@ async function main() {
     "mutokens."
   )
 
-  let [transferParams, permitParams] = await forgeTxAndParams({
+  const [transferParams, permitParams] = await forgeTxAndParams({
     to,
     tokenId,
     amount,
@@ -85,7 +85,7 @@ async function main() {
     relayerFee: tokenFeeEstimate,
   })
 
-  let output = {
+  const output = {
     pubkey: permitParams["pubkey"],
     signature: permitParams["signature"],
     hash: permitParams["hash"],
@@ -102,7 +102,7 @@ async function main() {
 
   fs.writeFileSync("fixtures/permit.json", JSON.stringify(output))
 
-  let txid = await server
+  const txid = await server
     .post("/submit", output)
     .then((res) => res.data)
     .catch((e) => console.error(e.response.data))
@@ -119,7 +119,7 @@ const forgeTxAndParams = async (params) => {
     params.relayerFee
   )
 
-  let permitParams = await Tezos.createPermitPayload(
+  const permitParams = await Tezos.createPermitPayload(
     params.contractAddress,
     params.entrypoint,
     transferParams
@@ -136,15 +136,15 @@ const formTransferParams = (
   relayerAddress,
   relayerFee
 ) => {
-  let intendedTx = { to_: to_, token_id: tokenId, amount: amount }
+  const intendedTx = { to_: to_, token_id: tokenId, amount: amount }
 
-  let feeTx = {
+  const feeTx = {
     to_: relayerAddress,
     token_id: tokenId,
     amount: relayerFee,
   }
 
-  let txList = [
+  const txList = [
     [
       {
         from_: from_,

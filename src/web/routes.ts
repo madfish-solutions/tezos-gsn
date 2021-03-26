@@ -1,6 +1,5 @@
 import express from "express"
 import createError from "http-errors"
-// import { KEK } from "../defaults"
 import Tezos from "./tezos"
 import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
@@ -12,7 +11,7 @@ routes.get("/", async (_req, _res) => {
 })
 
 routes.post("/estimate", async (req, res) => {
-  let estimate = await Tezos.estimate(req.body)
+  const estimate = await Tezos.estimate(req.body)
   res.json(estimate)
 })
 
@@ -32,13 +31,13 @@ routes.post("/submit", async (req, res) => {
   const feeTx = Tezos.getFeeTxFromParams(req.body.callParams)
 
   const userFee = feeTx.amount
-  let tokenPrice = await tokensPerMutez(contractAddress, feeTx.token_id)
-  let ourFee =
+  const tokenPrice = await tokensPerMutez(contractAddress, feeTx.token_id)
+  const ourFee =
     tokenPrice.price * gasEstimate * Math.pow(10, tokenPrice.decimals)
 
   validateFeeSlippage(userFee, ourFee)
 
-  let result = await Tezos.submit(
+  const result = await Tezos.submit(
     contractAddress,
     pubkey,
     signature,
@@ -52,12 +51,12 @@ routes.post("/submit", async (req, res) => {
 routes.get("/price", async (req, res) => {
   const tokenAddress = req.query.tokenAddress
   const tokenId = req.query.tokenId as string
-  let price = await tokensPerMutez(tokenAddress, parseInt(tokenId))
+  const price = await tokensPerMutez(tokenAddress, parseInt(tokenId))
   res.json(price)
 })
 
 routes.get("/tokens", async (req, res) => {
-  let tokens = await supportedTokens()
+  const tokens = await supportedTokens()
   res.json(tokens)
 })
 

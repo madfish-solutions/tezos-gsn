@@ -19,7 +19,7 @@ namespace Tezos {
   ) => {
     const contract = await Toolkit.contract.at(contractAddress)
 
-    let calculatedHash = await permitParamHash(contract, entrypoint, params)
+    const calculatedHash = await permitParamHash(contract, entrypoint, params)
 
     if (calculatedHash != paramHash) {
       throw new GsnError("hash_does_not_match_to_params", {
@@ -64,17 +64,17 @@ namespace Tezos {
 
     const contract = await Toolkit.contract.at(contractAddress)
 
-    let permit = contract.methods
+    const permit = contract.methods
       .permit(pubkey, signature, hash)
       .toTransferParams({})
 
-    let feeTransfer = contract.methods[entrypoint](...params).toTransferParams(
-      {}
-    )
+    const feeTransfer = contract.methods[entrypoint](
+      ...params
+    ).toTransferParams({})
 
     let totalEstimate = 0
-    let estimates = await estimateAsBatch([permit, feeTransfer])
-    for (let est of estimates) {
+    const estimates = await estimateAsBatch([permit, feeTransfer])
+    for (const est of estimates) {
       totalEstimate += est.suggestedFeeMutez
     }
 
@@ -145,12 +145,12 @@ namespace Tezos {
       )
       .withContractCall(contract.methods[entrypoint](...params))
 
-    let batchOp = await batch.send()
+    const batchOp = await batch.send()
     return batchOp.hash
   }
 
   export const initProvider = (sk = "") => {
-    let secretKey = sk || process.env.SECRET_KEY
+    const secretKey = sk || process.env.SECRET_KEY
     assert(secretKey, "No secret key specified")
     Toolkit.setProvider({
       signer: new InMemorySigner(secretKey!),
