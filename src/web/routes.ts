@@ -1,6 +1,7 @@
 import express from "express"
 import createError from "http-errors"
 import * as Tezos from "./tezos"
+import * as GasStats from "./gas_stats"
 import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
 
@@ -45,7 +46,21 @@ routes.post("/submit", async (req, res) => {
     callParams.entrypoint,
     callParams.params
   )
+
+  // add gas used stats in case of success
+  GasStats.push(gasEstimate)
+
   res.json(result)
+})
+
+routes.post("/debug_add_gas", async (req, res) => {
+  let { gas } = req.body
+  GasStats.push(parseInt(gas))
+  res.json(true)
+})
+
+routes.get("/average_gas", async (req, res) => {
+  res.json(GasStats.average())
 })
 
 routes.get("/price", async (req, res) => {
