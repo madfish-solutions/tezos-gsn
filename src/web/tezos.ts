@@ -160,6 +160,10 @@ namespace Tezos {
   export const selfAddress = () => {
     return Toolkit.signer.publicKeyHash()
   }
+
+  export const selfPubkey = () => {
+    return Toolkit.signer.publicKey()
+  }
 }
 
 export default Tezos

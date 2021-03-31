@@ -57,7 +57,13 @@ routes.get("/price", async (req, res) => {
 
 routes.get("/tokens", async (req, res) => {
   const tokens = await supportedTokens()
-  res.json(tokens)
+  res.json({
+    relayer: {
+      address: await Tezos.selfAddress(),
+      pubkey: await Tezos.selfPubkey(),
+    },
+    tokens: tokens,
+  })
 })
 
 routes.use(function errorHandler(err, req, res, next) {
