@@ -12,7 +12,7 @@ const HOST = process.env.SERVER_HOST || "http://localhost"
 
 const server = axios.create({
   baseURL: `${HOST}:${PORT}`,
-  timeout: 20000,
+  timeout: 45000,
 })
 
 async function main() {
@@ -55,8 +55,8 @@ async function main() {
       params: preTransferParams,
     },
   }
-  let estimate = await Tezos.estimate(preOutput)
-  estimate += 100 // to compensate for dummy estimate occupying not enough bytes
+  const [transferEstimate, permitEstimate] = await Tezos.estimate(preOutput)
+  const estimate = transferEstimate + permitEstimate + 200 // to compensate for dummy estimate occupying not enough bytes
   console.log("Gas estimate for this operation is ", estimate)
 
   const tokenPrice = await server

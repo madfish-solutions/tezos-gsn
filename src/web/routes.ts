@@ -1,19 +1,22 @@
 import express from "express"
 import createError from "http-errors"
 import * as Tezos from "./tezos"
-import * as GasStats from "./gas_stats"
+import GasStats from "./gas_stats"
 import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
 
 export const routes = express.Router()
+
+export const transferGasStats = new GasStats()
+export const permitGasStats = new GasStats()
 
 routes.get("/", async () => {
   throw createError(404, "Route does not exist")
 })
 
 routes.post("/estimate", async (req, res) => {
-  const estimate = await Tezos.estimate(req.body)
-  res.json(estimate)
+  const [transfer, permit] = await Tezos.estimate(req.body)
+  res.json(transfer + permit)
 })
 
 routes.post("/submit", async (req, res) => {
@@ -28,7 +31,8 @@ routes.post("/submit", async (req, res) => {
     hash
   )
 
-  const gasEstimate = await Tezos.estimate(req.body)
+  const [transferEstimate, permitEstimate] = await Tezos.estimate(req.body)
+  const gasEstimate = transferEstimate + permitEstimate
   const feeTx = Tezos.getFeeTxFromParams(req.body.callParams)
 
   const userFee = feeTx.amount
@@ -48,19 +52,24 @@ routes.post("/submit", async (req, res) => {
   )
 
   // add gas used stats in case of success
-  GasStats.push(gasEstimate)
+  transferGasStats.push(transferEstimate)
+  permitGasStats.push(permitEstimate)
 
   res.json(result)
 })
 
 routes.post("/debug_add_gas", async (req, res) => {
   let { gas } = req.body
-  GasStats.push(parseInt(gas))
+  transferGasStats.push(parseInt(gas))
   res.json(true)
 })
 
-routes.get("/average_gas", async (req, res) => {
-  res.json(GasStats.average())
+routes.get("/average_transfer_gas", async (req, res) => {
+  res.json(transferGasStats.average())
+})
+
+routes.get("/average_permit_gas", async (req, res) => {
+  res.json(permitGasStats.average())
 })
 
 routes.get("/price", async (req, res) => {

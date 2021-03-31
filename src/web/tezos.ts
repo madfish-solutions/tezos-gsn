@@ -65,13 +65,8 @@ export const estimate = async (permitParams) => {
     {}
   )
 
-  let totalEstimate = 0
   const estimates = await estimateAsBatch([permit, feeTransfer])
-  for (const est of estimates) {
-    totalEstimate += est.suggestedFeeMutez
-  }
-
-  return totalEstimate
+  return estimates.map((est) => est.suggestedFeeMutez)
 }
 
 export async function permitParamHash(

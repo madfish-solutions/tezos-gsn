@@ -1,19 +1,22 @@
-const COUNT = 3
-const gas_stats: Array<number> = []
+const AVG_COUNT = 10
 
-export const push = (gasCost: number) => {
-  if (gas_stats.length >= COUNT) {
-    gas_stats.shift()
+export default class GasStats {
+  gas_stats: Array<number> = []
+
+  push = (gasCost: number) => {
+    if (this.gas_stats.length >= AVG_COUNT) {
+      this.gas_stats.shift()
+    }
+    this.gas_stats.push(gasCost)
   }
-  gas_stats.push(gasCost)
-}
 
-export const average = () => {
-  console.log(gas_stats)
-  if (gas_stats.length == 0) return 0
+  average = () => {
+    console.log(this.gas_stats)
+    if (this.gas_stats.length == 0) return 0
 
-  const total = gas_stats.reduce((acc, cost) => acc + cost)
+    const total = this.gas_stats.reduce((acc, cost) => acc + cost)
 
-  const avg = total / gas_stats.length
-  return avg
+    const avg = total / this.gas_stats.length
+    return avg
+  }
 }
