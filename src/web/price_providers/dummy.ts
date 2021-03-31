@@ -1,7 +1,7 @@
 import { PriceProvider, Price, Tokens } from "./interface"
 
 export class DummyPriceProvider implements PriceProvider {
-  async price(contractAddress: string, tokenId: number): Promise<Price> {
+  async price(): Promise<Price> {
     return { price: -1, decimals: 0 }
   }
   async supported(): Promise<Tokens> {

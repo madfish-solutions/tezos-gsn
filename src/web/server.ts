@@ -9,8 +9,10 @@ import { prodErrorHandler } from "./helpers"
 import { PINO_LOGGER, PORT, HOST } from "./defaults"
 import { routes } from "./routes"
 
-import Tezos from "./tezos"
+import { initProvider as initTezosProvider } from "./tezos"
 import { initPriceProvider } from "./price"
+
+import priceProviderParams from '../../price_provider.json';
 
 export const app = express()
   .use(pinoHttp(PINO_LOGGER))
@@ -31,8 +33,7 @@ export const server = app.listen(+PORT, HOST, async () => {
   const { address: host, port }: any = server.address()
   logger.info(`Server listening on http://${host}:${port}`)
 
-  Tezos.initProvider()
+  initTezosProvider()
 
-  const priceProviderParams = require("../../price_provider.json")
   initPriceProvider(priceProviderParams)
 })
