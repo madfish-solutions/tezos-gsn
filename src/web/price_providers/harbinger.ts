@@ -1,5 +1,5 @@
 import { Toolkit } from "../tezos"
-import { PriceProvider, Price, Tokens } from "./interface"
+import { PriceProvider, Price, Token } from "./interface"
 import { GsnError } from "../helpers"
 
 import { BigMapAbstraction, TezosToolkit } from "@taquito/taquito"
@@ -9,15 +9,11 @@ import BigNumber from "bignumber.js"
 const mainnetNode = "https://mainnet-tezos.giganode.io"
 
 export class HarbingerPriceProvider implements PriceProvider {
-  tokens: Tokens = {}
+  tokens: Token[] = []
   normalizerAddress: string
   toolkit: TezosToolkit
 
-  constructor(
-    normalizerAddress: string,
-    tokens: Tokens,
-    useMainnet = false
-  ) {
+  constructor(normalizerAddress: string, tokens: Token[], useMainnet = false) {
     this.tokens = tokens
     this.normalizerAddress = normalizerAddress
 
@@ -28,7 +24,7 @@ export class HarbingerPriceProvider implements PriceProvider {
     }
   }
 
-  async supported(): Promise<Tokens> {
+  async supported(): Promise<Token[]> {
     return this.tokens
   }
 
@@ -40,18 +36,12 @@ export class HarbingerPriceProvider implements PriceProvider {
       assetMap: BigMapAbstraction
     }>()
 
-    if (!this.tokens.hasOwnProperty(contractAddress)) {
-      throw new GsnError("unsupported_token_contract", {
-        address: contractAddress,
-        provider: "harbinger",
-      })
-    }
-
-    const asset = this.tokens[contractAddress]
-    if (asset.tokenId != tokenId) {
-      throw new GsnError("unsupported_token_id", {
+    const asset = this.tokens.find(
+      (el) => el.contractAddress == contractAddress && el.tokenId == tokenId
+    )
+    if (asset == undefined) {
+      throw new GsnError("unsupported_token_address_or_id", {
         tokenId: tokenId,
-        supportedTokenId: asset.tokenId,
         address: contractAddress,
         provider: "harbinger",
       })

@@ -1,12 +1,13 @@
 {
   "type": "harbinger",
   "normalizer": "KT1AdbYiPYb5hDuEuVrfxmFehtnBCXv4Np7r",
-  "tokens": {
-    "KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So": {
+  "tokens": [
+    {
+      "contractAddress": "KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So",
       "name": "XTZ-USD",
       "decimals": 8,
       "tokenId": 0 
     }
-  },
+  ],
   "mainnet": true
 }
