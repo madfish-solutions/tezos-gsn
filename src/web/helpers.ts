@@ -36,7 +36,13 @@ export const validateFeeSlippage = (userFee, newlyEstimatedFee) => {
   // }
   if (newlyEstimatedFee > userFee) {
     throw new GsnError("fee_is_too_low", {
-      error: "fee_is_too_low",
+      requestedPrice: userFee,
+      minAllowedPrice: newlyEstimatedFee,
+    })
+  }
+
+  if (userFee >= newlyEstimatedFee * 2) {
+    throw new GsnError("fee_is_too_high", {
       requestedPrice: userFee,
       minAllowedPrice: newlyEstimatedFee,
     })
