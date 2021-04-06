@@ -5,6 +5,7 @@ import { hex2buf } from "@taquito/utils"
 import blake from "blakejs"
 import { BigNumber } from "bignumber.js"
 import { GsnError, getUnpackedUniques } from "../web/helpers"
+import { MichelCodecPacker } from "@taquito/taquito"
 
 export const Toolkit = new TezosToolkit(
   process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
@@ -149,4 +150,6 @@ export const initProvider = (sk = "") => {
   Toolkit.setProvider({
     signer: new InMemorySigner(secretKey!),
   })
+
+  Toolkit.setPackerProvider(new MichelCodecPacker())
 }

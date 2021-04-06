@@ -14,8 +14,8 @@
     "deploy": "node scripts/cli.js deploy -p $npm_package_config_network stablecoin"
   },
   "dependencies": {
-    "@taquito/signer": "^8.0.4-beta.0",
-    "@taquito/taquito": "^8.0.4-beta.0",
+    "@taquito/signer": "^v8.1.0-beta.0",
+    "@taquito/taquito": "^v8.1.0-beta.0",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "commander": "^7.0.0",

@@ -4,6 +4,7 @@ require("dotenv").config()
 
 const fs = require("fs")
 import * as Tezos from "../src/web/tezos"
+import { forgeTxAndParams, formTransferParams } from "./helpers"
 
 import axios from "axios"
 
@@ -107,53 +108,6 @@ async function main() {
     .then((res) => res.data)
     .catch((e) => console.error(e.response.data))
   console.log("Payment paid by GSN successfully: ", txid)
-}
-
-const forgeTxAndParams = async (params) => {
-  var transferParams = formTransferParams(
-    await Tezos.selfAddress(),
-    params.to,
-    params.tokenId,
-    params.amount,
-    params.relayerAddress,
-    params.relayerFee
-  )
-
-  const permitParams = await Tezos.createPermitPayload(
-    params.contractAddress,
-    params.entrypoint,
-    transferParams
-  )
-
-  return [transferParams, permitParams]
-}
-
-const formTransferParams = (
-  from_,
-  to_,
-  tokenId,
-  amount,
-  relayerAddress,
-  relayerFee
-) => {
-  const intendedTx = { to_: to_, token_id: tokenId, amount: amount }
-
-  const feeTx = {
-    to_: relayerAddress,
-    token_id: tokenId,
-    amount: relayerFee,
-  }
-
-  const txList = [
-    [
-      {
-        from_: from_,
-        txs: [intendedTx, feeTx],
-      },
-    ],
-  ]
-
-  return txList
 }
 
 ;(async () => {
