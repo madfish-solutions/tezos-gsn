@@ -1,6 +1,7 @@
 import express from "express"
 import createError from "http-errors"
-import * as Tezos from "./tezos"
+import * as GsnToolkit from "./gsntoolkit"
+import { toolkit } from "./server"
 import GasStats from "./gas_stats"
 import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
@@ -15,25 +16,29 @@ routes.get("/", async () => {
 })
 
 routes.post("/estimate", async (req, res) => {
-  const [transfer, permit] = await Tezos.estimate(req.body)
+  const [transfer, permit] = await GsnToolkit.estimate(toolkit, req.body)
   res.json(transfer + permit)
 })
 
 routes.post("/submit", async (req, res) => {
   const { signature, hash, pubkey, contractAddress, callParams } = req.body
 
-  await Tezos.validateAddress(callParams)
+  await GsnToolkit.validateAddress(toolkit, callParams)
 
-  await Tezos.validate(
+  await GsnToolkit.validate(
+    toolkit,
     contractAddress,
     callParams.entrypoint,
     callParams.params,
     hash
   )
 
-  const [transferEstimate, permitEstimate] = await Tezos.estimate(req.body)
+  const [transferEstimate, permitEstimate] = await GsnToolkit.estimate(
+    toolkit,
+    req.body
+  )
   const gasEstimate = transferEstimate + permitEstimate
-  const feeTx = Tezos.getFeeTxFromParams(req.body.callParams)
+  const feeTx = GsnToolkit.getFeeTxFromParams(req.body.callParams)
 
   const userFee = feeTx.amount
   const tokenPrice = await tokensPerMutez(contractAddress, feeTx.token_id)
@@ -42,7 +47,8 @@ routes.post("/submit", async (req, res) => {
 
   validateFeeSlippage(userFee, ourFee)
 
-  const result = await Tezos.submit(
+  const result = await GsnToolkit.submit(
+    toolkit,
     contractAddress,
     pubkey,
     signature,
@@ -83,8 +89,8 @@ routes.get("/tokens", async (_, res) => {
   const tokens = await supportedTokens()
   res.json({
     relayer: {
-      address: await Tezos.selfAddress(),
-      pubkey: await Tezos.selfPubkey(),
+      address: await toolkit.signer.publicKeyHash(),
+      pubkey: await toolkit.signer.publicKey(),
     },
     tokens: tokens,
   })

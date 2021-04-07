@@ -7,19 +7,21 @@ import { BigNumber } from "bignumber.js"
 import { GsnError, getUnpackedUniques } from "../web/helpers"
 import { MichelCodecPacker } from "@taquito/taquito"
 
-export const Toolkit = new TezosToolkit(
-  process.env.RPC_PROVIDER || "http://127.0.0.1:8732"
-)
-
 export const validate = async (
+  toolkit,
   contractAddress,
   entrypoint,
   params,
   paramHash
 ) => {
-  const contract = await Toolkit.contract.at(contractAddress)
+  const contract = await toolkit.contract.at(contractAddress)
 
-  const calculatedHash = await permitParamHash(contract, entrypoint, params)
+  const calculatedHash = await permitParamHash(
+    toolkit,
+    contract,
+    entrypoint,
+    params
+  )
 
   if (calculatedHash != paramHash) {
     throw new GsnError("hash_does_not_match_to_params", {
@@ -33,8 +35,8 @@ export const getFeeTxFromParams = (callParams) => {
   return callParams.params[0][0].txs[1]
 }
 
-export const validateAddress = async (callParams) => {
-  const gsnAddress = await Toolkit.signer.publicKeyHash()
+export const validateAddress = async (toolkit, callParams) => {
+  const gsnAddress = await toolkit.signer.publicKeyHash()
 
   const feeTx = getFeeTxFromParams(callParams)
   const addressFromTransfer = feeTx.to_
@@ -46,17 +48,17 @@ export const validateAddress = async (callParams) => {
   }
 }
 
-const estimateAsBatch = (txs) =>
-  Toolkit.estimate.batch(
+const estimateAsBatch = (toolkit, txs) =>
+  toolkit.estimate.batch(
     txs.map((tParams) => ({ kind: OpKind.TRANSACTION, ...tParams }))
   )
 
-export const estimate = async (permitParams) => {
+export const estimate = async (toolkit, permitParams) => {
   const { signature, hash, pubkey, contractAddress, callParams } = permitParams
 
   const { entrypoint, params } = callParams
 
-  const contract = await Toolkit.contract.at(contractAddress)
+  const contract = await toolkit.contract.at(contractAddress)
 
   const permit = contract.methods
     .permit(pubkey, signature, hash)
@@ -66,16 +68,17 @@ export const estimate = async (permitParams) => {
     {}
   )
 
-  const estimates = await estimateAsBatch([permit, feeTransfer])
+  const estimates = await estimateAsBatch(toolkit, [permit, feeTransfer])
   return estimates.map((est) => est.suggestedFeeMutez)
 }
 
 export async function permitParamHash(
+  toolkit,
   contract, //: ContractAbstraction<ContractProvider>,
   entrypoint, //: string,
   parameters //: any
 ) {
-  const raw_packed = await Toolkit.rpc.packData({
+  const raw_packed = await toolkit.rpc.packData({
     data: contract.parameterSchema.Encode(entrypoint, ...parameters),
     type: contract.parameterSchema.root.typeWithoutAnnotations(),
   })
@@ -84,18 +87,19 @@ export async function permitParamHash(
 }
 
 export const createPermitPayload = async (
+  toolkit: TezosToolkit,
   contractAddress,
   entrypoint,
   params
 ) => {
-  const contract = await Toolkit.contract.at(contractAddress)
+  const contract = await toolkit.contract.at(contractAddress)
 
   const storage = await contract.storage<{ permit_counter: BigNumber }>()
 
-  const signerKey = await Toolkit.signer.publicKey()
-  const paramHash = await permitParamHash(contract, entrypoint, params)
+  const signerKey = await toolkit.signer.publicKey()
+  const paramHash = await permitParamHash(toolkit, contract, entrypoint, params)
 
-  const chainId = await Toolkit.rpc.getChainId()
+  const chainId = await toolkit.rpc.getChainId()
   const currentPermitCount = storage.permit_counter.toNumber()
   const unpacked = getUnpackedUniques(
     contractAddress,
@@ -104,11 +108,11 @@ export const createPermitPayload = async (
     paramHash
   )
 
-  const packed = await Toolkit.rpc
+  const packed = await toolkit.rpc
     .packData(unpacked)
     .catch((e) => console.error("error:", e))
 
-  const sig = await Toolkit.signer
+  const sig = await toolkit.signer
     .sign(packed["packed"])
     .then((s) => s.prefixSig)
   return {
@@ -119,6 +123,7 @@ export const createPermitPayload = async (
 }
 
 export const submit = async (
+  toolkit,
   contractAddress,
   signerKey,
   signature,
@@ -126,9 +131,10 @@ export const submit = async (
   entrypoint,
   params
 ) => {
-  const contract = await Toolkit.contract.at(contractAddress)
+  const contract = await toolkit.contract.at(contractAddress)
 
-  const batch = Toolkit.batch()
+  const batch = toolkit
+    .batch()
     .withContractCall(contract.methods.permit(signerKey, signature, paramsHash))
     .withContractCall(contract.methods[entrypoint](...params))
 
@@ -136,20 +142,12 @@ export const submit = async (
   return batchOp.hash
 }
 
-export const selfAddress = () => {
-  return Toolkit.signer.publicKeyHash()
-}
-
-export const selfPubkey = () => {
-  return Toolkit.signer.publicKey()
-}
-
-export const initProvider = (sk = "") => {
-  const secretKey = sk || process.env.SECRET_KEY
-  assert(secretKey, "No secret key specified")
-  Toolkit.setProvider({
-    signer: new InMemorySigner(secretKey!),
+export const initToolkit = (rpcEndpoint, secretKey) => {
+  const toolkit = new TezosToolkit(rpcEndpoint)
+  toolkit.setProvider({
+    signer: new InMemorySigner(secretKey),
   })
 
-  Toolkit.setPackerProvider(new MichelCodecPacker())
+  toolkit.setPackerProvider(new MichelCodecPacker())
+  return toolkit
 }

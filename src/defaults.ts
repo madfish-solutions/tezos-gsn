@@ -1,5 +1,7 @@
-import { assertEnv } from "./system/env";
+import { assertEnv } from "./system/env"
 
-assertEnv("KEK");
+assertEnv("RPC_PROVIDER")
+assertEnv("SECRET_KEY")
 
-export const KEK = parseInt(process.env.KEK!);
+export const RPC_PROVIDER = process.env.RPC_PROVIDER!
+export const SECRET_KEY = process.env.SECRET_KEY!
