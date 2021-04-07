@@ -15,35 +15,25 @@ const TEZ_DECIMALS = 6
 const mainnetNode = "https://mainnet-tezos.giganode.io"
 
 export class QuipuswapPriceProvider implements PriceProvider {
-  tokens: QuipuToken[]
+  token: QuipuToken
   toolkit: TezosToolkit
 
-  constructor(tokens: QuipuToken[], useMainnet = false) {
-    this.tokens = tokens
-    if (useMainnet) {
+  constructor(params) {
+    const { mainnet } = params
+    this.token = params
+    if (mainnet) {
       this.toolkit = new TezosToolkit(mainnetNode)
     } else {
       this.toolkit = Toolkit
     }
   }
 
-  async supported(): Promise<Token[]> {
-    return this.tokens
+  info(): Token {
+    return this.token
   }
 
-  async price(contractAddress: string, tokenId: number): Promise<Price> {
-    const token = this.tokens.find(
-      (el) => el.contractAddress == contractAddress && el.tokenId == tokenId
-    )
-    if (token == undefined) {
-      throw new GsnError("unsupported_token_address_or_id", {
-        tokenId: tokenId,
-        address: contractAddress,
-        provider: "quipuswap",
-      })
-    }
-
-    const pair = await this.toolkit.contract.at(token.pairAddress)
+  async price(): Promise<Price> {
+    const pair = await this.toolkit.contract.at(this.token.pairAddress)
     console.log("pair", pair)
     const imStorage = await pair.storage<{
       storage: {
@@ -55,10 +45,13 @@ export class QuipuswapPriceProvider implements PriceProvider {
 
     const price = token_pool.div(tez_pool)
     // TODO figure out the decimals
-    const scale = Math.pow(10, token.decimals - TEZ_DECIMALS)
+    const scale = Math.pow(10, this.token.decimals - TEZ_DECIMALS)
     const tezPrice = price.div(scale)
 
-    return { price: price.toNumber(), decimals: token.decimals - TEZ_DECIMALS }
+    return {
+      price: price.toNumber(),
+      decimals: this.token.decimals - TEZ_DECIMALS,
+    }
   }
 
   scaleDecimals(input: number): number {

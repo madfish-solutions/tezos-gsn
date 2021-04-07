@@ -1,17 +1,17 @@
 export interface Price {
   price: number
   decimals: number
-  error?: string
 }
 
 export interface Token {
-  contractAddress: string
+  address: string
   name: string
   decimals: number
   tokenId: number
+  type: string
 }
 
 export interface PriceProvider {
-  price: (contractAddress: string, tokenId: number) => Promise<Price>
-  supported: () => Promise<Token[]>
+  price: () => Promise<Price>
+  info: () => Token
 }

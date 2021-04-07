@@ -5,62 +5,54 @@ import { GsnError } from "../helpers"
 import { BigMapAbstraction, TezosToolkit } from "@taquito/taquito"
 import BigNumber from "bignumber.js"
 
+interface HarbingerToken extends Token {
+  normalizer: string
+}
+
 // HACK for using real-world prices in a sandbox
 const mainnetNode = "https://mainnet-tezos.giganode.io"
 
 export class HarbingerPriceProvider implements PriceProvider {
-  tokens: Token[] = []
-  normalizerAddress: string
+  token: HarbingerToken
   toolkit: TezosToolkit
 
-  constructor(normalizerAddress: string, tokens: Token[], useMainnet = false) {
-    this.tokens = tokens
-    this.normalizerAddress = normalizerAddress
+  constructor(params) {
+    const { mainnet } = params
+    this.token = params
 
-    if (useMainnet) {
+    if (mainnet) {
       this.toolkit = new TezosToolkit(mainnetNode)
     } else {
       this.toolkit = Toolkit
     }
   }
 
-  async supported(): Promise<Token[]> {
-    return this.tokens
+  info(): Token {
+    return this.token
   }
 
-  async price(contractAddress: string, tokenId: number): Promise<Price> {
+  async price(): Promise<Price> {
     const priceNormalizer = await this.toolkit.contract.at(
-      this.normalizerAddress
+      this.token.normalizer
     )
     const storage = await priceNormalizer.storage<{
       assetMap: BigMapAbstraction
     }>()
 
-    const asset = this.tokens.find(
-      (el) => el.contractAddress == contractAddress && el.tokenId == tokenId
-    )
-    if (asset == undefined) {
-      throw new GsnError("unsupported_token_address_or_id", {
-        tokenId: tokenId,
-        address: contractAddress,
-        provider: "harbinger",
-      })
-    }
-
     const assetMap = storage["assetMap"]
     const pairPrices = await assetMap.get<{ computedPrice: BigNumber }>(
-      asset.name
+      this.token.name
     )
     if (pairPrices) {
       const computedPrice = pairPrices.computedPrice.toNumber()
       const tezPrice = this.scaleDecimals(computedPrice)
       const mutezPrice = this.scaleDecimals(tezPrice)
-      return { price: mutezPrice, decimals: asset.decimals }
+      return { price: mutezPrice, decimals: this.token.decimals }
     }
 
     throw new GsnError("relayer_price_provider_configuration_error", {
       description: "No such pair exists in normalizer",
-      assetName: asset.name,
+      assetName: this.token.name,
       provider: "harbinger",
     })
   }
