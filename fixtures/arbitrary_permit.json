@@ -1,0 +1,26 @@
+{
+    "fee": {
+        "contract": "KT1feeContract",
+        "permit": {
+            "key": "pubkey",
+            "sig": "signature",
+            "hash": "hash"
+        },
+        "params": {
+            //fa2 transfer params
+        }
+    },
+    "calls": {
+        "contract": "KT1contract",
+        "sequence": [
+            {
+                "permit": {},
+                "params": {}
+            },
+            {
+                "permit": {},
+                "params": {}
+            }
+        ]
+    }
+}
