@@ -3,16 +3,15 @@
 require("dotenv").config()
 
 const fs = require("fs")
-import * as Tezos from "../src/web/tezos"
-import { forgeTxAndParams, formTransferParams } from "./helpers"
+import * as GsnToolkit from "../src/web/gsntoolkit"
+import { formTransferParams } from "./helpers"
 
 import axios from "axios"
 
-const PORT = process.env.SERVER_PORT || "7979"
-const HOST = process.env.SERVER_HOST || "http://localhost"
+const SERVER_ENDPOINT = process.env.SERVER_ENDPOINT || "http://localhost:7979"
 
 const server = axios.create({
-  baseURL: `${HOST}:${PORT}`,
+  baseURL: SERVER_ENDPOINT,
   timeout: 45000,
 })
 
@@ -27,20 +26,26 @@ async function main() {
 
   const relayerAddress = args.relayer_address
 
-  Tezos.initProvider(secretKey)
+  const toolkit = GsnToolkit.initToolkit(process.env.RPC_PROVIDER, secretKey)
 
   const entrypoint = "transfer"
   const dummyFee = 1
 
-  const [preTransferParams, prePermitParams] = await forgeTxAndParams({
+  var preTransferParams = formTransferParams(
+    await toolkit.signer.publicKeyHash(),
     to,
     tokenId,
     amount,
+    relayerAddress,
+    dummyFee
+  )
+
+  const prePermitParams = await GsnToolkit.createPermitPayload(
+    toolkit,
     contractAddress,
     entrypoint,
-    relayerAddress,
-    relayerFee: dummyFee,
-  })
+    preTransferParams
+  )
 
   const preOutput = {
     pubkey: prePermitParams["pubkey"],
@@ -56,7 +61,10 @@ async function main() {
       params: preTransferParams,
     },
   }
-  const [transferEstimate, permitEstimate] = await Tezos.estimate(preOutput)
+  const [transferEstimate, permitEstimate] = await GsnToolkit.estimate(
+    toolkit,
+    preOutput
+  )
   const estimate = transferEstimate + permitEstimate + 200 // to compensate for dummy estimate occupying not enough bytes
   console.log("Gas estimate for this operation is ", estimate)
 
@@ -76,15 +84,21 @@ async function main() {
     "mutokens."
   )
 
-  const [transferParams, permitParams] = await forgeTxAndParams({
+  var transferParams = formTransferParams(
+    await toolkit.signer.publicKeyHash(),
     to,
     tokenId,
     amount,
+    relayerAddress,
+    tokenFeeEstimate
+  )
+
+  const permitParams = await GsnToolkit.createPermitPayload(
+    toolkit,
     contractAddress,
     entrypoint,
-    relayerAddress,
-    relayerFee: tokenFeeEstimate,
-  })
+    transferParams
+  )
 
   const output = {
     pubkey: permitParams["pubkey"],

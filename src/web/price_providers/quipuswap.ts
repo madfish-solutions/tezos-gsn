@@ -1,4 +1,4 @@
-import { Toolkit } from "../tezos"
+import { toolkit } from "../server"
 import { PriceProvider, Price, Token } from "./interface"
 import { GsnError } from "../helpers"
 
@@ -24,7 +24,7 @@ export class QuipuswapPriceProvider implements PriceProvider {
     if (mainnet) {
       this.toolkit = new TezosToolkit(mainnetNode)
     } else {
-      this.toolkit = Toolkit
+      this.toolkit = toolkit
     }
   }
 

@@ -1,24 +1,3 @@
-import * as Tezos from "../src/web/tezos"
-
-export const forgeTxAndParams = async (params) => {
-  var transferParams = formTransferParams(
-    await Tezos.selfAddress(),
-    params.to,
-    params.tokenId,
-    params.amount,
-    params.relayerAddress,
-    params.relayerFee
-  )
-
-  const permitParams = await Tezos.createPermitPayload(
-    params.contractAddress,
-    params.entrypoint,
-    transferParams
-  )
-
-  return [transferParams, permitParams]
-}
-
 export const formTransferParams = (
   from_,
   to_,
