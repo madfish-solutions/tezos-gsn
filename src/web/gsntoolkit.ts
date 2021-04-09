@@ -122,6 +122,37 @@ export const createPermitPayload = async (
   }
 }
 
+export const submitArbitrary = async (toolkit, fee, calls) => {
+  const feeContract = await toolkit.contract.at(fee.contractAddress)
+  const contract = await toolkit.contract.at(calls.contractAddress)
+  let batch = toolkit.batch()
+
+  batch = batch
+    .withContractCall(
+      feeContract.methods.permit(
+        fee.permit.key,
+        fee.permit.sig,
+        fee.permit.hash
+      )
+    )
+    .withContractCall(feeContract.methods.transfer(...fee.params))
+
+  for (const call of calls.sequence) {
+    batch = batch
+      .withContractCall(
+        contract.methods.permit(
+          call.permit.key,
+          call.permit.sig,
+          call.permit.hash
+        )
+      )
+      .withContractCall(contract.methods[call.entrypoint](...call.params))
+  }
+
+  const batchOp = await batch.send()
+  return batchOp.hash
+}
+
 export const submit = async (
   toolkit,
   contractAddress,
