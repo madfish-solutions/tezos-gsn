@@ -11,7 +11,7 @@ export class DummyPriceProvider implements PriceProvider {
         name: "DUMMY-PRICE",
         decimals: 0,
         tokenId: 0,
-      },
+      } as any,
     ]
   }
 }
