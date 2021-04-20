@@ -1,0 +1,28 @@
+[
+    {
+        "contract": "KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So",
+        "entrypoint": "transfer",
+        "args": [
+            [
+                {
+                    "from_": "tz1MDhGTfMQjtMYFXeasKzRWzkQKPtXEkSEw",
+                    "txs": [
+                        {
+                            "to_": "tz1XXPVLyQqsMVaQKnPWvD4q6nVwgwXUG4Fp",
+                            "token_id": 0,
+                            "amount": 123
+                        }
+                    ]
+                }
+            ]
+        ],
+        "shmargs": [
+            [
+                {
+                    "to_": "tz1MDhGTfMQjtMYFXeasKzRWzkQKPtXEkSEw",
+                    "amount": 1
+                }
+            ]
+        ]
+    }
+]

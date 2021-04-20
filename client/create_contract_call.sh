@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ts-node client/arbitrary_call.ts --secret edskS8cuSBGV8wML2HRshpZpntTLyvMcwmJZHuyYxxpYvmTCTfTLsb1Hz3p5EjrwHUFFS5ZYBQmVbWo38qTXTmjSFkvBt9ssDB --fee_token_address KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So --relayer_address tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb

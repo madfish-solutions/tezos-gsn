@@ -115,8 +115,6 @@ async function main() {
     },
   }
 
-  fs.writeFileSync("fixtures/permit.json", JSON.stringify(output))
-
   const txid = await server
     .post("/submit", output)
     .then((res) => res.data)

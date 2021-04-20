@@ -1,3 +1,0 @@
-#!/bin/sh
-
-ts-node scripts/create_permit.ts --secret edskS8cuSBGV8wML2HRshpZpntTLyvMcwmJZHuyYxxpYvmTCTfTLsb1Hz3p5EjrwHUFFS5ZYBQmVbWo38qTXTmjSFkvBt9ssDB --contract_address KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So --to tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6 --amount 10 --relayer_address tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb

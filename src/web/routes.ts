@@ -21,6 +21,19 @@ routes.post("/estimate", async (req, res) => {
 })
 
 routes.post("/submit", async (req, res) => {
+  if (req.body.hasOwnProperty("signature")) {
+    return await submitAsOptimizedTransfer(req, res)
+  } else if (req.body.hasOwnProperty("fee")) {
+    return await submitAsArbitraryCalls(req, res)
+  }
+})
+
+const submitAsArbitraryCalls = async (req, res) => {
+  const { fee, calls } = req.body
+  await GsnToolkit.validateFeeTransfer(toolkit, fee)
+}
+
+const submitAsOptimizedTransfer = async (req, res) => {
   const { signature, hash, pubkey, contractAddress, callParams } = req.body
 
   await GsnToolkit.validateAddress(toolkit, callParams)
@@ -61,8 +74,8 @@ routes.post("/submit", async (req, res) => {
   transferGasStats.push(transferEstimate)
   permitGasStats.push(permitEstimate)
 
-  res.json(result)
-})
+  return res.json(result)
+}
 
 routes.post("/debug_add_gas", async (req, res) => {
   let { gas } = req.body

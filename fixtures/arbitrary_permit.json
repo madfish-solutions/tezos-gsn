@@ -1,26 +1,27 @@
 {
     "fee": {
-        "contract": "KT1feeContract",
+        "contract": "KT1feecontract",
         "permit": {
             "key": "pubkey",
             "sig": "signature",
             "hash": "hash"
         },
-        "params": {
+        "args": {
             //fa2 transfer params
         }
     },
-    "calls": {
-        "contract": "KT1contract",
-        "sequence": [
-            {
-                "permit": {},
-                "params": {}
-            },
-            {
-                "permit": {},
-                "params": {}
-            }
-        ]
-    }
+    "calls": [
+        {
+            "contract": "KT1contract",
+            "permit": {},
+            "entrypoint": "default",
+            "args": {}
+        },
+        {
+            "contract": "KT1anotherontract",
+            "permit": {},
+            "entrypoint": "NiceCall",
+            "args": {}
+        }
+    ]
 }

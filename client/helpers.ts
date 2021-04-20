@@ -25,3 +25,19 @@ export const formTransferParams = (
 
   return txList
 }
+
+export const formSimpleTransferParams = (
+  from: string,
+  to: string,
+  token_id: number,
+  amount: number
+) => {
+  return [
+    [
+      {
+        from_: from,
+        txs: [{ to_: to, token_id: token_id, amount }],
+      },
+    ],
+  ]
+}

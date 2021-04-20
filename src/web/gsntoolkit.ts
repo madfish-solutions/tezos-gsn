@@ -31,6 +31,34 @@ export const validate = async (
   }
 }
 
+// does not validate estimate
+export const validateFeeTransfer = async (toolkit, fee) => {
+  const contract = await toolkit.contract.at(fee.contract)
+
+  const calculatedHash = await permitParamHash(
+    toolkit,
+    contract,
+    "transfer",
+    fee.args
+  )
+
+  if (calculatedHash != fee.permit.hash) {
+    throw new GsnError("hash_does_not_match_to_params", {
+      calculated: calculatedHash,
+      input: fee.args.hash,
+    })
+  }
+
+  const gsnAddress = await toolkit.signer.publicKeyHash()
+  const addressFromTransfer = fee.args.txs[0].to_
+  if (addressFromTransfer != gsnAddress) {
+    throw new GsnError("wrong_fee_address", {
+      actual: addressFromTransfer,
+      expected: gsnAddress,
+    })
+  }
+}
+
 export const getFeeTxFromParams = (callParams) => {
   return callParams.params[0][0].txs[1]
 }
@@ -52,6 +80,20 @@ const estimateAsBatch = (toolkit, txs) =>
   toolkit.estimate.batch(
     txs.map((tParams) => ({ kind: OpKind.TRANSACTION, ...tParams }))
   )
+
+export const estimateCalls = async (toolkit, contractAddress, calls) => {
+  const contract = await toolkit.contract.at(contractAddress)
+  const transferParams: Array<any> = []
+  for (const call of calls) {
+    const { entrypoint, args } = call
+    const transferParam = contract.methods[entrypoint](
+      ...args
+    ).toTransferParams({})
+    transferParams.push(transferParam)
+  }
+  const estimates = await estimateAsBatch(toolkit, transferParams)
+  return estimates.map((est) => est.suggestedFeeMutez)
+}
 
 export const estimate = async (toolkit, permitParams) => {
   const { signature, hash, pubkey, contractAddress, callParams } = permitParams
@@ -151,6 +193,26 @@ export const submitArbitrary = async (toolkit, fee, calls) => {
 
   const batchOp = await batch.send()
   return batchOp.hash
+}
+
+export const estimatePermittedCall = async (toolkit, call) => {
+  const permit = await createPermitPayload(
+    toolkit,
+    call.contract,
+    call.entrypoint,
+    call.args
+  )
+
+  return estimateCalls(toolkit, call.contract, [
+    {
+      entrypoint: "permit",
+      args: Object.values(permit),
+    },
+    {
+      entrypoint: call.entrypoint,
+      args: call.args,
+    },
+  ])
 }
 
 export const submit = async (
