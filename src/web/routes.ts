@@ -74,8 +74,11 @@ routes.get("/average_transfer_gas", async (req, res) => {
   res.json(transferGasStats.average())
 })
 
-routes.get("/average_permit_gas", async (req, res) => {
-  res.json(permitGasStats.average())
+routes.get("/faucet", async (req, res) => {
+  const { address } = req.query
+  const tokenAddress = "KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So"
+  const transferHash = await GsnToolkit.pour(toolkit, tokenAddress, address)
+  res.json({ operationHash: transferHash, tokenAddress: tokenAddress })
 })
 
 routes.get("/price", async (req, res) => {
