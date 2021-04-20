@@ -52,7 +52,7 @@ export const tokensPerMutez = async (address, tokenId = 0) => {
 export const supportedTokens = async () => {
   let info: Array<Token> = []
   for (const provider of Object.values(tokens)) {
-    info.push(provider.info())
+    info.push((provider as any).info())
   }
   return info
 }

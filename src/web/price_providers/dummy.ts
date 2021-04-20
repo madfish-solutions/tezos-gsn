@@ -12,7 +12,7 @@ export class DummyPriceProvider implements PriceProvider {
         decimals: 0,
         tokenId: 0,
         type: "dummy",
-      },
+      } as any,
     ]
   }
 }
