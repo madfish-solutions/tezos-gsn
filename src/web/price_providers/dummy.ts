@@ -7,10 +7,11 @@ export class DummyPriceProvider implements PriceProvider {
   async supported(): Promise<Token[]> {
     return [
       {
-        contractAddress: "tz1dummyaddress",
+        address: "tz1dummyaddress",
         name: "DUMMY-PRICE",
         decimals: 0,
         tokenId: 0,
+        type: "dummy",
       },
     ]
   }
