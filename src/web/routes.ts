@@ -45,7 +45,7 @@ routes.post("/submit", async (req, res) => {
 
   validateFeeSlippage(userFee, ourFee)
 
-  const result = await GsnToolkit.submit(
+  const operation = await GsnToolkit.submit(
     toolkit,
     contractAddress,
     pubkey,
@@ -60,7 +60,10 @@ routes.post("/submit", async (req, res) => {
   Stats.gas[tokenIdentifier].push(gasEstimate)
   Stats.fee[tokenIdentifier].push(userFee)
 
-  res.json(result)
+  res.json({
+    hash: operation.hash,
+    results: operation.results,
+  })
 })
 
 routes.get("/stats", async (req, res) => {

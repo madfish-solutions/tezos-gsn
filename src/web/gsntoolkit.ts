@@ -157,7 +157,7 @@ export const submit = async (
     .withContractCall(contract.methods[entrypoint](...params))
 
   const batchOp = await batch.send()
-  return batchOp.hash
+  return batchOp
 }
 
 export const initToolkit = (rpcEndpoint, secretKey) => {
