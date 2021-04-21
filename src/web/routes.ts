@@ -7,6 +7,7 @@ import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
 
 export const routes = express.Router()
+let faucetTimeout = false
 
 routes.get("/", async () => {
   throw createError(404, "Route does not exist")
@@ -82,10 +83,18 @@ routes.get("/stats", async (req, res) => {
 })
 
 routes.get("/faucet", async (req, res) => {
+  if (faucetTimeout) {
+    return res.json("Faucet is blocked. Please try again in 10 seconds")
+  }
+  faucetTimeout = true
+  setTimeout(() => {
+    faucetTimeout = false
+  }, 10_000)
+
   const { address } = req.query
   const tokenAddress = "KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So"
   const transferHash = await GsnToolkit.pour(toolkit, tokenAddress, address)
-  res.json({ operationHash: transferHash, tokenAddress: tokenAddress })
+  return res.json({ operationHash: transferHash, tokenAddress: tokenAddress })
 })
 
 routes.get("/price", async (req, res) => {

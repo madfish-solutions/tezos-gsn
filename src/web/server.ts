@@ -40,6 +40,5 @@ export const server = app.listen(+PORT, HOST, async () => {
   initPriceProvider(priceProviderParams)
 
   const tokens = Object.keys(priceProviderTokens)
-  console.log("tokens")
   initStats(tokens)
 })
