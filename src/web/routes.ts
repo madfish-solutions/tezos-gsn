@@ -33,30 +33,6 @@ const submitAsArbitraryCalls = async (req, res) => {
   const feeTransfer = fee.args[0][0].txs[0]
   const userFee = feeTransfer.amount
 
-  // HACKY-WACKY
-  fee.entrypoint = "transfer"
-
-  // let estimate = 0
-  // const allCalls = calls.concat([fee])
-  // for (const call of allCalls) {
-  //   console.log("contract address", call.contract, call.entrypoint)
-  //   const [permitEstimate, callEstimate] = await GsnToolkit.estimateCalls(
-  //     toolkit,
-  //     call.contract,
-  //     [
-  //       {
-  //         entrypoint: "permit",
-  //         args: Object.values(call.permit),
-  //       },
-  //       {
-  //         entrypoint: call.entrypoint,
-  //         args: call.args,
-  //       },
-  //     ]
-  //   )
-  //   estimate += permitEstimate + callEstimate
-  // }
-
   let estimate = await GsnToolkit.submitArbitrary(toolkit, fee, calls, true)
   estimate += 100
 
@@ -68,9 +44,9 @@ const submitAsArbitraryCalls = async (req, res) => {
 
   const operation = await GsnToolkit.submitArbitrary(toolkit, fee, calls)
 
-  // TODO add to stats
-  // transferGasStats.push(transferEstimate)
-  // permitGasStats.push(permitEstimate)
+  const tokenIdentifier = fee.contract + ":" + feeTransfer.token_id
+  Stats.gas[tokenIdentifier].push(estimate)
+  Stats.fee[tokenIdentifier].push(userFee)
 
   return res.json({ hash: operation.hash, results: operation.results })
 }
