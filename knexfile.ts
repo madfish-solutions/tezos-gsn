@@ -1,5 +1,5 @@
-import "dotenv/config";
+import "dotenv/config"
 
 // Hook from source config.
-import { KNEX } from "./src/repo/defaults";
-module.exports = KNEX;
+import { KNEX } from "./src/db/defaults"
+module.exports = KNEX

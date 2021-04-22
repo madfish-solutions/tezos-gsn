@@ -1,3 +1,5 @@
+import * as DB from "../db"
+
 const AVG_COUNT = 10
 
 export let gas: any = {}
@@ -8,6 +10,27 @@ export const initStats = (tokens) => {
     gas[token] = new Stats()
     fee[token] = new Stats()
   }
+}
+
+export const add = (
+  hash,
+  payload,
+  feeTokenIdentifier,
+  gasEstimate,
+  feeEstimate,
+  userFee
+) => {
+  const transaction: DB.ITransaction = {
+    hash,
+    payload,
+    userFee,
+    gasEstimate,
+    feeEstimate,
+    feeToken: feeTokenIdentifier,
+  }
+  DB.Transaction()
+    .insert(transaction)
+    .then((res) => console.log(res))
 }
 
 export class Stats {

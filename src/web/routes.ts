@@ -57,8 +57,15 @@ routes.post("/submit", async (req, res) => {
 
   // track stats in case of success
   const tokenIdentifier = contractAddress + ":" + feeTx.token_id
-  Stats.gas[tokenIdentifier].push(gasEstimate)
-  Stats.fee[tokenIdentifier].push(userFee)
+
+  Stats.add(
+    operation.hash,
+    req.body,
+    tokenIdentifier,
+    gasEstimate,
+    ourFee,
+    userFee
+  )
 
   res.json({
     hash: operation.hash,
@@ -105,6 +112,18 @@ routes.get("/price", async (req, res) => {
   const tokenId = req.query.tokenId as string
   const price = await tokensPerMutez(tokenAddress, parseInt(tokenId))
   res.json(price)
+})
+
+routes.post("/db", async (req, res) => {
+  Stats.add(
+    "gyga",
+    '{"gyga": 1}',
+    "KT1LEsmxw5LLUbZe3vdsDbcE39WK7tATda2h",
+    10,
+    100,
+    1_000
+  )
+  res.json("ok")
 })
 
 routes.get("/tokens", async (_, res) => {
