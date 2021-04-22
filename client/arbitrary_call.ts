@@ -46,9 +46,6 @@ async function main() {
     dummyFee
   )
 
-  console.log("feeTokenAddress", feeTokenAddress)
-  console.log("preFeeTransfer", preFeeTransfer)
-
   const [
     prePermitEstimate,
     preTransferEstimate,
@@ -93,11 +90,14 @@ async function main() {
     tokenFeeEstimate
   )
 
+  let permitOffset = 0
+
   const permitParams = await GsnToolkit.createPermitPayload(
     toolkit,
     feeTokenAddress,
     "transfer",
-    feeTransfer
+    feeTransfer,
+    permitOffset
   )
 
   const fee = {
@@ -106,13 +106,16 @@ async function main() {
     args: feeTransfer,
   }
 
+  permitOffset += 1
+
   const permittedCalls: Array<any> = []
   for (const call of calls) {
     const permit = await GsnToolkit.createPermitPayload(
       toolkit,
-      feeTokenAddress,
+      call.contract,
       call.entrypoint,
-      call.args
+      call.args,
+      permitOffset
     )
 
     permittedCalls.push({
@@ -121,6 +124,8 @@ async function main() {
       entrypoint: call.entrypoint,
       args: call.args,
     })
+
+    permitOffset += 1
   }
 
   const submitPayload = {
@@ -128,6 +133,8 @@ async function main() {
     calls: permittedCalls,
   }
   console.log(util.inspect(submitPayload, { showHidden: false, depth: null }))
+
+  fs.writeFileSync("arbitraryCall.json", JSON.stringify(submitPayload))
 
   // const txid = await server
   //   .post("/submit", {

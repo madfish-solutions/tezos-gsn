@@ -31,6 +31,50 @@ routes.post("/submit", async (req, res) => {
 const submitAsArbitraryCalls = async (req, res) => {
   const { fee, calls } = req.body
   await GsnToolkit.validateFeeTransfer(toolkit, fee)
+
+  const feeTransfer = fee.args[0][0].txs[0]
+  const userFee = feeTransfer.amount
+
+  // HACKY-WACKY
+  fee.entrypoint = "transfer"
+
+  // let estimate = 0
+  // const allCalls = calls.concat([fee])
+  // for (const call of allCalls) {
+  //   console.log("contract address", call.contract, call.entrypoint)
+  //   const [permitEstimate, callEstimate] = await GsnToolkit.estimateCalls(
+  //     toolkit,
+  //     call.contract,
+  //     [
+  //       {
+  //         entrypoint: "permit",
+  //         args: Object.values(call.permit),
+  //       },
+  //       {
+  //         entrypoint: call.entrypoint,
+  //         args: call.args,
+  //       },
+  //     ]
+  //   )
+  //   estimate += permitEstimate + callEstimate
+  // }
+
+  let estimate = await GsnToolkit.submitArbitrary(toolkit, fee, calls, true)
+  estimate += 100
+
+  const tokenPrice = await tokensPerMutez(fee.contract, feeTransfer.token_id)
+  const ourCalculatedFee =
+    tokenPrice.price * estimate * Math.pow(10, tokenPrice.decimals)
+
+  validateFeeSlippage(userFee, ourCalculatedFee)
+
+  const operation = await GsnToolkit.submitArbitrary(toolkit, fee, calls)
+
+  // TODO add to stats
+  // transferGasStats.push(transferEstimate)
+  // permitGasStats.push(permitEstimate)
+
+  return res.json({ hash: operation.hash, results: operation.results })
 }
 
 const submitAsOptimizedTransfer = async (req, res) => {
@@ -120,6 +164,7 @@ routes.use(function errorHandler(err, _, res, next) {
       ...err.data,
     })
   }
+  // return res.status(400).json(err)
   res.status(400).json({
     error: err.name,
     id: err.id,
