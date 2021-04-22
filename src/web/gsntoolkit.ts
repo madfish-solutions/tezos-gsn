@@ -251,6 +251,24 @@ export const estimatePermittedCall = async (toolkit, call) => {
   ])
 }
 
+export const pour = async (toolkit, contractAddress, destination) => {
+  const contract = await toolkit.contract.at(contractAddress)
+
+  const decimals = 6
+  const amount = Math.pow(10, decimals)
+
+  const op = await contract.methods
+    .transfer([
+      {
+        from_: await toolkit.signer.publicKeyHash(),
+        txs: [{ to_: destination, token_id: 0, amount: amount }],
+      },
+    ])
+    .send()
+
+  return op.hash
+}
+
 export const submit = async (
   toolkit,
   contractAddress,
@@ -268,7 +286,7 @@ export const submit = async (
     .withContractCall(contract.methods[entrypoint](...params))
 
   const batchOp = await batch.send()
-  return batchOp.hash
+  return batchOp
 }
 
 export const initToolkit = (rpcEndpoint, secretKey) => {

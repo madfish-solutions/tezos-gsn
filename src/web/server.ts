@@ -11,7 +11,8 @@ import { RPC_PROVIDER, SECRET_KEY } from "../defaults"
 import { routes } from "./routes"
 
 import { initToolkit } from "./gsntoolkit"
-import { initPriceProvider } from "./price"
+import { initPriceProvider, tokens as priceProviderTokens } from "./price"
+import { initStats } from "./stats"
 
 import priceProviderParams from "../../price_provider.json"
 
@@ -37,4 +38,7 @@ export const server = app.listen(+PORT, HOST, async () => {
   logger.info(`Server listening on http://${host}:${port}`)
 
   initPriceProvider(priceProviderParams)
+
+  const tokens = Object.keys(priceProviderTokens)
+  initStats(tokens)
 })

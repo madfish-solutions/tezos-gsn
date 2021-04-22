@@ -22,7 +22,7 @@ export const initPriceProvider = (providers: Array<Token>) => {
     }
     let provider = parse(token)
 
-    const key = token.address + token.tokenId
+    const key = token.address + ":" + token.tokenId
     if (tokens.hasOwnProperty(key)) {
       throw new GsnError("price_configuration_error", {
         kind: "duplicate_price_provider",
@@ -37,7 +37,7 @@ export const initPriceProvider = (providers: Array<Token>) => {
 }
 
 export const tokensPerMutez = async (address, tokenId = 0) => {
-  const tokenKey = address + tokenId
+  const tokenKey = address + ":" + tokenId
   if (!tokens.hasOwnProperty(tokenKey)) {
     throw new GsnError("unsupported_token_address_or_id", {
       tokenId: tokenId,
@@ -52,7 +52,7 @@ export const tokensPerMutez = async (address, tokenId = 0) => {
 export const supportedTokens = async () => {
   let info: Array<Token> = []
   for (const provider of Object.values(tokens)) {
-    info.push(provider!.info() as Token)
+    info.push((provider as any).info() as Token)
   }
   return info
 }

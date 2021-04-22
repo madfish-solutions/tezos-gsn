@@ -1,15 +1,13 @@
-import express from "express"
+import express, { Router } from "express"
 import createError from "http-errors"
 import * as GsnToolkit from "./gsntoolkit"
 import { toolkit } from "./server"
-import GasStats from "./gas_stats"
+import * as Stats from "./stats"
 import { tokensPerMutez, supportedTokens } from "./price"
 import { GsnError, validateFeeSlippage } from "./helpers"
 
 export const routes = express.Router()
-
-export const transferGasStats = new GasStats()
-export const permitGasStats = new GasStats()
+let faucetTimeout = false
 
 routes.get("/", async () => {
   throw createError(404, "Route does not exist")
@@ -104,7 +102,7 @@ const submitAsOptimizedTransfer = async (req, res) => {
 
   validateFeeSlippage(userFee, ourFee)
 
-  const result = await GsnToolkit.submit(
+  const operation = await GsnToolkit.submit(
     toolkit,
     contractAddress,
     pubkey,
@@ -114,25 +112,49 @@ const submitAsOptimizedTransfer = async (req, res) => {
     callParams.params
   )
 
-  // add gas used stats in case of success
-  transferGasStats.push(transferEstimate)
-  permitGasStats.push(permitEstimate)
+  // track stats in case of success
+  const tokenIdentifier = contractAddress + ":" + feeTx.token_id
+  Stats.gas[tokenIdentifier].push(gasEstimate)
+  Stats.fee[tokenIdentifier].push(userFee)
 
-  return res.json(result)
+  res.json({
+    hash: operation.hash,
+    results: operation.results,
+  })
 }
 
-routes.post("/debug_add_gas", async (req, res) => {
-  let { gas } = req.body
-  transferGasStats.push(parseInt(gas))
-  res.json(true)
+routes.get("/stats", async (req, res) => {
+  const gas = {}
+  console.log(Stats.gas)
+  for (const token of Object.keys(Stats.gas)) {
+    gas[token] = {
+      average: Stats.gas[token].getAverage(),
+      total: Stats.gas[token].total,
+    }
+  }
+  const fee = {}
+  for (const token of Object.keys(Stats.fee)) {
+    fee[token] = {
+      average: Stats.fee[token].getAverage(),
+      total: Stats.fee[token].total,
+    }
+  }
+  res.json({ gas, fee })
 })
 
-routes.get("/average_transfer_gas", async (req, res) => {
-  res.json(transferGasStats.average())
-})
+routes.get("/faucet", async (req, res) => {
+  if (faucetTimeout) {
+    return res.json("Faucet is blocked. Please try again in 10 seconds")
+  }
+  faucetTimeout = true
+  setTimeout(() => {
+    faucetTimeout = false
+  }, 10_000)
 
-routes.get("/average_permit_gas", async (req, res) => {
-  res.json(permitGasStats.average())
+  const { address } = req.query
+  const tokenAddress = "KT1HT65Jw3wUPHshjH1EwCZRQbXNRTfhS6So"
+  const transferHash = await GsnToolkit.pour(toolkit, tokenAddress, address)
+  return res.json({ operationHash: transferHash, tokenAddress: tokenAddress })
 })
 
 routes.get("/price", async (req, res) => {
