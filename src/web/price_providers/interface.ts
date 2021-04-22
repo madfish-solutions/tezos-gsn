@@ -13,6 +13,5 @@ export interface Token {
 
 export interface PriceProvider {
   price: () => Promise<Price>
-  info?: () => Token
-  supported?: () => Promise<Token[]>
+  info: () => Token
 }
