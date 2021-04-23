@@ -74,22 +74,8 @@ routes.post("/submit", async (req, res) => {
 })
 
 routes.get("/stats", async (req, res) => {
-  const gas = {}
-  console.log(Stats.gas)
-  for (const token of Object.keys(Stats.gas)) {
-    gas[token] = {
-      average: Stats.gas[token].getAverage(),
-      total: Stats.gas[token].total,
-    }
-  }
-  const fee = {}
-  for (const token of Object.keys(Stats.fee)) {
-    fee[token] = {
-      average: Stats.fee[token].getAverage(),
-      total: Stats.fee[token].total,
-    }
-  }
-  res.json({ gas, fee })
+  const txs = await Stats.get()
+  res.json(txs)
 })
 
 routes.get("/faucet", async (req, res) => {

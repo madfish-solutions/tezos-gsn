@@ -22,15 +22,28 @@ export const add = (
 ) => {
   const transaction: DB.ITransaction = {
     hash,
-    payload,
     userFee,
     gasEstimate,
     feeEstimate,
+    payload: JSON.stringify(payload),
     feeToken: feeTokenIdentifier,
   }
   DB.Transaction()
     .insert(transaction)
     .then((res) => console.log(res))
+}
+
+export const get = async () => {
+  const transactions = await DB.Transaction()
+    .select("feeToken")
+    .avg({ avgGasEstimate: "gas_estimate" })
+    .avg({ avgOurFeeEstimate: "fee_estimate" })
+    .avg({ avgUserFee: "user_fee" })
+    .sum({ totalGasEstimate: "gas_estimate" })
+    .sum({ totalOurFeeEstimate: "fee_estimate" })
+    .sum({ totalUserFee: "user_fee" })
+    .groupBy("feeToken")
+  return transactions
 }
 
 export class Stats {
