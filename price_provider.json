@@ -7,14 +7,5 @@
     "decimals": 8,
     "tokenId": 0,
     "mainnet": true
-  },
-  {
-    "type": "quipuswap",
-    "address": "KT1K9gCRgaLRFKTErYt1wVxA3Frb9FjasjTV",
-    "tokenId": 0,
-    "name": "kUSD",
-    "decimals": 18,
-    "pairAddress": "KT1CiSKXR68qYSxnbzjwvfeMCRburaSDonT2",
-    "mainnet": true
   }
 ]
