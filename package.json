@@ -36,7 +36,7 @@
     "express-validator": "^6.9.2",
     "helmet": "^4.4.1",
     "http-errors": "^1.8.0",
-    "knex": "^0.21.17",
+    "knex": "^2.4.0",
     "knex-stringcase": "^1.4.5",
     "memoizee": "^0.4.15",
     "ms": "^2.1.3",
